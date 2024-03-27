@@ -15,8 +15,8 @@ import {
   NDivider,
   useMessage,
 } from 'naive-ui';
-import { lyla } from '@/request';
-import { CONST } from '@/utils'
+import { lyla, SOCKET_URL } from '@/request';
+import { CONST } from '@/utils';
 
 const message = useMessage();
 const ws = ref(null);
@@ -50,8 +50,7 @@ canvas.height = VIDEO_HEIGHT;
 const ctx = canvas.getContext('2d');
 
 const openWebsocket = () => {
-  const api_url = 'ws://localhost:4242/api';
-  const websocket = new WebSocket(api_url);
+  const websocket = new WebSocket(SOCKET_URL);
 
   websocket.onopen = (e) => {
     console.log('connected: ', e);

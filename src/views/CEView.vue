@@ -1,8 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import {
-  NRadioGroup,
-  NRadio,
+  NSelect,
   NInput,
   NIcon,
   NButton,
@@ -13,6 +12,8 @@ import {
   NImage,
   NSpin,
   NSpace,
+  NH3,
+  NDivider,
   useMessage,
 } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
@@ -31,10 +32,6 @@ const options = [
 ];
 
 const loading = ref(false);
-
-const handleChange = (data) => {
-  fileList.value = data.fileList;
-};
 
 const handleUpload = () => {
   if (!fileList.value.length) {
@@ -59,14 +56,16 @@ const handleUpload = () => {
 </script>
 
 <template>
-  <n-space vertical>
+  <div>
+    <n-h3 prefix="bar">1. 上传PDF</n-h3>
     <n-spin :show="loading">
       <n-upload
         multiple
         ref="upload"
+        :max="2"
         :default-upload="false"
         v-model:file-list="fileList"
-        @change="handleChange"
+        @change="(data) => (fileList = data.fileList)"
       >
         <n-upload-dragger>
           <div style="margin-bottom: 12px">
@@ -83,30 +82,22 @@ const handleUpload = () => {
         </n-upload-dragger>
       </n-upload>
       <n-space vertical>
-        <n-radio-group v-model:value="mode" name="radiogroup">
-          <n-space>
-            <n-radio
-              v-for="option in options"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </n-radio>
-          </n-space>
-        </n-radio-group>
         <n-space>
+          <n-select v-model:value="mode" :options="options" />
           <n-input type="text" placeholder="Sheet表" />
           <n-button type="primary" @click="handleUpload"> 开始对比 </n-button>
         </n-space>
       </n-space>
     </n-spin>
+    <n-divider />
+    <n-h3 prefix="bar">2. 检测结果</n-h3>
     <n-image
       v-show="response.result"
       :src="response.result"
       alt="image"
       width="100%"
     />
-  </n-space>
+  </div>
 </template>
 
 <style scoped>

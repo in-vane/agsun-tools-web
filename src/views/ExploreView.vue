@@ -15,7 +15,7 @@ import {
   useMessage,
 } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
-import { lyla } from '@/request';
+import { lyla, SOCKET_URL } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import { CONST } from '@/utils';
 
@@ -36,8 +36,7 @@ const loadingCompare = ref(false);
 
 const openWebsocket = () => {
   loadingUpload.value = true;
-  const api_url = 'ws://localhost:4242/api';
-  const websocket = new WebSocket(api_url);
+  const websocket = new WebSocket(SOCKET_URL);
 
   websocket.onopen = (e) => {
     console.log('connected: ', e);

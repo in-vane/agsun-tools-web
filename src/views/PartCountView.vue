@@ -18,7 +18,7 @@ import {
   useMessage,
 } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
-import { lyla } from '@/request';
+import { lyla, SOCKET_URL } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import { CONST } from '@/utils';
 
@@ -42,8 +42,7 @@ const loadingPartCount = ref(false);
 
 const openWebsocket = () => {
   loadingUpload.value = true;
-  const api_url = 'ws://localhost:4242/api';
-  const websocket = new WebSocket(api_url);
+  const websocket = new WebSocket(SOCKET_URL);
 
   websocket.onopen = (e) => {
     console.log('connected: ', e);
@@ -128,10 +127,6 @@ const handlePartCount = () => {
     .finally(() => {
       loadingPartCount.value = false;
     });
-  // setTimeout(() => {
-  //   response.value.result = mock
-  //   loadingPartCount.value = false;
-  // }, 1000);
 };
 
 const handleKeyDownEsc = (e) => {
@@ -177,33 +172,6 @@ const columns = [
     key: 'expected',
     render: (_) => (_.expected == null ? '-' : _.expected[0]),
   },
-];
-
-const mock = [
-  { no: '1', state: true, found: null, expected: null },
-  { no: '2', state: true, found: null, expected: null },
-  { no: '8', state: true, found: null, expected: null },
-  { no: '3', state: true, found: null, expected: null },
-  { no: '4', state: true, found: null, expected: null },
-  { no: '5', state: true, found: null, expected: null },
-  { no: '6', state: true, found: null, expected: null },
-  { no: '7', state: true, found: null, expected: null },
-  { no: '9', state: true, found: null, expected: null },
-  { no: '11', state: false, found: 0, expected: [1] },
-  { no: '10', state: true, found: null, expected: null },
-  { no: '12', state: true, found: null, expected: null },
-  { no: '13', state: false, found: 1, expected: [2] },
-  { no: '14', state: true, found: null, expected: null },
-  { no: '15', state: true, found: null, expected: null },
-  { no: '16', state: true, found: null, expected: null },
-  { no: '17', state: true, found: null, expected: null },
-  { no: '18', state: true, found: null, expected: null },
-  { no: '19', state: false, found: 4, expected: [1] },
-  { no: '20', state: true, found: null, expected: null },
-  { no: '21', state: true, found: null, expected: null },
-  { no: '22', state: true, found: null, expected: null },
-  { no: '23', state: true, found: null, expected: null },
-  { no: '24', state: true, found: null, expected: null },
 ];
 
 const renderRowClass = (rowData) => (rowData.state ? '' : 'row-error');
