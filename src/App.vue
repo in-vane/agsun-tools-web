@@ -43,7 +43,7 @@ const menuOptions = [
   { label: l('/table', '明细表'), key: 'table', icon: ri(IList) },
   { label: l('/screw', '螺丝包'), key: 'screw', icon: ri(IBuild) },
   { label: l('/lang', '语言顺序'), key: 'lang', icon: ri(ILang) },
-  { label: l('/camera', '实物检测'), key: 'camera', icon: ri(ICamera) },
+  { label: l('/ocr', '实物检测'), key: 'camera', icon: ri(ICamera) },
 ];
 const routeName = ref('');
 const route = useRoute();

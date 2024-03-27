@@ -13,6 +13,7 @@ import {
   NBadge,
   NSelect,
   NDivider,
+  NTag,
   useMessage,
 } from 'naive-ui';
 import { lyla, SOCKET_URL } from '@/request';
@@ -23,6 +24,7 @@ const ws = ref(null);
 
 const fileList = ref([]);
 const images = ref([]);
+const progress = ref(0);
 const current = ref(0);
 const cameras = ref([]);
 const mediaTrack = ref(null);
@@ -41,8 +43,8 @@ const loadingWebsocket = ref(false);
 const loadingUpload = ref(false);
 
 const VIDEO_WIDTH = 1080 / 3;
-// const VIDEO_HEIGHT = 1920 / 3;
-const VIDEO_HEIGHT = VIDEO_WIDTH * 1.414;
+const VIDEO_HEIGHT = 1920 / 3;
+// const VIDEO_HEIGHT = VIDEO_WIDTH * 1.414;
 const video = ref(null);
 const canvas = document.createElement('canvas');
 canvas.width = VIDEO_WIDTH;
@@ -66,6 +68,7 @@ const openWebsocket = () => {
     const { img_base64, total, current } = data;
     if (img_base64) {
       images.value.push(img_base64);
+      progress.value = total; // 总数，用以显示进度
       current == total && ws.value.close();
     }
   };
@@ -122,8 +125,10 @@ const handleCompare = () => {
   }
   handleCrop();
   loadingWebsocket.value = true;
-  let url = mode.value == MODE_CHAR ? '/ocr_char' : '/ocr_icon';
+  const file = fileList.value[0].file;
+  const url = mode.value == MODE_CHAR ? '/ocr_char' : '/ocr_icon';
   const formData = new FormData();
+  formData.append('filename', file.name);
   formData.append('mode', mode.value);
   formData.append('page', current.value + 1);
   formData.append('crop', cropBase64.value);
@@ -159,7 +164,9 @@ const handleOpenCamera = () => {
         cameras.value = options;
       });
     })
-    .catch((err) => {});
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
 const handleSwitchCamera = (groupId) => {
@@ -178,20 +185,28 @@ const handleSwitchCamera = (groupId) => {
     .catch((err) => {});
 };
 
-onUnmounted(() => {
+const handleCloseCamera = () => {
   video.srcObject = null;
   if (mediaTrack.value) {
     mediaTrack.value.getVideoTracks().forEach((track) => {
       track.stop();
     });
   }
+};
+
+onUnmounted(() => {
+  handleCloseCamera();
 });
 </script>
 
 <template>
   <div>
     <!-- upload -->
-    <n-spin :show="loadingUpload" content-class="upload-spin-content">
+    <n-spin
+      :show="loadingUpload"
+      content-class="upload-spin-content"
+      :description="`${images.length} / ${progress}`"
+    >
       <n-h3 prefix="bar">1. 上传PDF</n-h3>
       <n-upload
         :max="1"
@@ -209,6 +224,7 @@ onUnmounted(() => {
           <div class="preview-item" v-for="(img, i) in images" :key="i">
             <n-badge :value="i + 1" :color="current == i ? '#18a058' : 'gray'">
               <n-image
+                :class="current == i ? 'current-img' : ''"
                 :src="img"
                 alt="image"
                 height="200px"
@@ -233,8 +249,6 @@ onUnmounted(() => {
         >
           <n-button :disabled="cameras.length == 0"> 切换摄像头 </n-button>
         </n-popselect>
-        <!-- <n-button @click="handleCrop"> 截图 </n-button> -->
-        <!-- <n-button @click="handleCloseCamera"> 关闭摄像头 </n-button> -->
         <n-select v-model:value="mode" :options="options" />
         <n-button type="primary" @click="handleCompare"> 开始检测 </n-button>
       </n-space>
@@ -253,17 +267,20 @@ onUnmounted(() => {
           alt="image"
           :height="VIDEO_HEIGHT"
         />
-        <n-image-group>
-          <n-space>
-            <n-image
-              v-for="(img, i) in response.result"
-              :key="i"
-              :src="img"
-              alt="image"
-              width="200px"
-            />
-          </n-space>
-        </n-image-group>
+        <div v-show="response.error">
+          <n-image-group>
+            <n-space>
+              <n-image
+                v-for="(img, i) in response.result"
+                :key="i"
+                :src="img"
+                alt="image"
+                width="200px"
+              />
+            </n-space>
+          </n-image-group>
+        </div>
+        <n-tag type="error" v-show="!response.error"> 该实物图无法检测 </n-tag>
       </n-space>
     </n-space>
   </div>
@@ -295,6 +312,9 @@ onUnmounted(() => {
   border-radius: 3px;
   border: 1px solid rgb(224, 224, 230);
   cursor: pointer;
+}
+.current-img {
+  border-color: #18a058;
 }
 .n-select {
   width: 160px;

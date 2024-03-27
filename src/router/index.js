@@ -54,8 +54,8 @@ const router = createRouter({
       component: () => import('../views/LanguageView.vue'),
     },
     {
-      path: '/camera',
-      name: 'camera',
+      path: '/ocr',
+      name: 'ocr',
       component: () => import('../views/OCRView.vue'),
     },
     // {
