@@ -28,7 +28,7 @@ const response = ref({
 const loading = ref(false);
 
 const handleChange = (data) => {
-  console.log(data)
+  console.log(data);
   fileList.value = data.fileList;
 };
 
@@ -49,43 +49,43 @@ const handleUpload = () => {
 
 <template>
   <n-space vertical>
-    <n-space justify="space-between">
-      <n-h3 prefix="bar">选择要检查尺寸的CE文件</n-h3>
-      <n-button type="primary" :ghost="true" @click="handleUpload">
-        开始检查
-      </n-button>
-    </n-space>
-    <n-spin :show="loading">
-      <n-upload
-        ref="upload"
-        accept=".pdf"
-        :max="1"
-        :default-upload="false"
-        v-model:file-list="fileList"
-        @change="handleChange"
-      >
-        <n-upload-dragger>
-          <div style="margin-bottom: 12px">
-            <n-icon size="48" :depth="3">
-              <archive-icon />
-            </n-icon>
-          </div>
-          <n-text style="font-size: 16px">
-            点击或者拖动文件到该区域来上传
-          </n-text>
-          <n-p depth="3" style="margin: 8px 0 0 0">
-            检查贴纸上标注尺寸是否与实际尺寸相符
-          </n-p>
-        </n-upload-dragger>
-      </n-upload>
-    </n-spin>
+    <div>
+      <n-h3 prefix="bar">1. 选择要检查尺寸的CE文件</n-h3>
+      <n-spin :show="loading">
+        <n-upload
+          ref="upload"
+          accept=".pdf"
+          :max="1"
+          :default-upload="false"
+          v-model:file-list="fileList"
+          @change="handleChange"
+        >
+          <n-upload-dragger>
+            <div style="margin-bottom: 12px">
+              <n-icon size="48" :depth="3">
+                <archive-icon />
+              </n-icon>
+            </div>
+            <n-text style="font-size: 16px">
+              点击或者拖动文件到该区域来上传
+            </n-text>
+            <n-p depth="3" style="margin: 8px 0 0 0">
+              检查贴纸上标注尺寸是否与实际尺寸相符
+            </n-p>
+          </n-upload-dragger>
+        </n-upload>
+        <n-button type="primary" :ghost="true" @click="handleUpload">
+          开始检查
+        </n-button>
+      </n-spin>
+    </div>
     <div v-show="response.result">
       <n-h3
         prefix="bar"
         :class="`n-h3-${response.error ? 'error' : 'success'}`"
         :type="response.error ? 'error' : 'success'"
       >
-        检测结果: {{ response.error_msg }}
+        2. 检测结果: {{ response.error_msg }}
       </n-h3>
       <n-image :src="response.result" alt="image" width="100%" />
     </div>
@@ -98,7 +98,7 @@ const handleUpload = () => {
   border-radius: 3px;
 }
 .n-h3 {
-  position: relative;
+  margin-bottom: 8px;
 }
 .n-h3-success::after,
 .n-h3-error::after {

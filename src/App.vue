@@ -35,13 +35,13 @@ const l = (path, label) => () =>
 const ri = (icon) => () => h(NIcon, null, { default: () => h(icon) });
 const menuOptions = [
   { label: l('/home', '首页'), key: 'home', icon: ri(IHome) },
-  { label: l('/ce', 'CE表对比'), key: 'ce', icon: ri(ITable) },
-  { label: l('/explore', '爆炸图'), key: 'explore', icon: ri(ISpark) },
+  { label: l('/explore', '图例对比'), key: 'explore', icon: ri(ISpark) },
   { label: l('/count', '零件计数'), key: 'count', icon: ri(ICog) },
-  { label: l('/size', '贴纸尺寸'), key: 'size', icon: ri(ICrop) },
   { label: l('/pageNo', '页码检查'), key: 'pageNo', icon: ri(IBook) },
   { label: l('/table', '明细表'), key: 'table', icon: ri(IList) },
   { label: l('/screw', '螺丝包'), key: 'screw', icon: ri(IBuild) },
+  { label: l('/ce', 'CE表对比'), key: 'ce', icon: ri(ITable) },
+  { label: l('/size', 'CE贴纸尺寸'), key: 'size', icon: ri(ICrop) },
   { label: l('/lang', '语言顺序'), key: 'lang', icon: ri(ILang) },
   { label: l('/ocr', '实物检测'), key: 'camera', icon: ri(ICamera) },
 ];
