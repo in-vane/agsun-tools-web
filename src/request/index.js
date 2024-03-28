@@ -1,10 +1,10 @@
 import { createLyla } from '@lylajs/web';
 
 const PORT = 8888;
-const SOCKET_URL = `ws://localhost:${PORT}/api`;
+const SOCKET_URL = `ws://localhost:${PORT}/websocket`;
 
 const { lyla } = createLyla({
-  baseUrl: `http://127.0.0.1:${PORT}`,
+  baseUrl: `http://localhost:${PORT}/api`,
 });
 
 export { lyla, PORT, SOCKET_URL };

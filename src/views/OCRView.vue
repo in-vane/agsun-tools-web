@@ -42,8 +42,8 @@ const cropBase64 = ref('');
 const loadingWebsocket = ref(false);
 const loadingUpload = ref(false);
 
-const VIDEO_WIDTH = 1080 / 3;
-const VIDEO_HEIGHT = 1920 / 3;
+const VIDEO_WIDTH = 1080;
+const VIDEO_HEIGHT = 1920;
 // const VIDEO_HEIGHT = VIDEO_WIDTH * 1.414;
 const video = ref(null);
 const canvas = document.createElement('canvas');

@@ -24,6 +24,11 @@ const router = createRouter({
       component: () => import('../views/ExploreView.vue'),
     },
     {
+      path: '/fullPage',
+      name: 'fullPage',
+      component: () => import('../views/FullPageView.vue'),
+    },
+    {
       path: '/count',
       name: 'count',
       component: () => import('../views/PartCountView.vue'),
