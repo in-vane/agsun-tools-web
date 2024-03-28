@@ -18,6 +18,7 @@ import {
   HomeOutline as IHome,
   LogoTableau as ITable,
   SparklesOutline as ISpark,
+  DocumentOutline as IDoc,
   CropOutline as ICrop,
   BookOutline as IBook,
   ListOutline as IList,
@@ -36,6 +37,7 @@ const ri = (icon) => () => h(NIcon, null, { default: () => h(icon) });
 const menuOptions = [
   { label: l('/home', '首页'), key: 'home', icon: ri(IHome) },
   { label: l('/explore', '图例对比'), key: 'explore', icon: ri(ISpark) },
+  { label: l('/fullPage', '整页对比'), key: 'fullPage', icon: ri(IDoc) },
   { label: l('/count', '零件计数'), key: 'count', icon: ri(ICog) },
   { label: l('/pageNo', '页码检查'), key: 'pageNo', icon: ri(IBook) },
   { label: l('/table', '明细表'), key: 'table', icon: ri(IList) },
@@ -79,7 +81,7 @@ watchEffect(() => {
     <n-layout has-sider>
       <n-layout-sider
         bordered
-        default-collapsed
+        :default-collapsed="false"
         collapse-mode="width"
         :collapsed-width="64"
         :width="200"
