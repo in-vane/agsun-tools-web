@@ -1,19 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
-import {
-  NScrollbar,
-  NIcon,
-  NButton,
-  NUpload,
-  NUploadDragger,
-  NText,
-  NP,
-  NImage,
-  NSpin,
-  NSpace,
-  NH3,
-  useMessage,
-} from 'naive-ui';
+import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, SOCKET_URL } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
@@ -129,10 +116,6 @@ const handleCompare = () => {
     .catch((err) => {})
     .finally(() => {
       loadingCompare.value = false;
-      window.scrollTo({
-        top: window.innerHeight,
-        behavior: 'smooth',
-      });
     });
 };
 
@@ -172,130 +155,128 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div>
-    <n-space vertical>
-      <!-- upload -->
-      <div>
-        <n-h3 prefix="bar">1. 上传PDF</n-h3>
-        <n-upload
-          multiple
-          ref="upload"
-          accept=".pdf"
-          :max="2"
-          :default-upload="false"
-          v-model:file-list="fileList"
-          :disabled="loadingUpload"
-          @change="handleChange"
-        >
-          <n-upload-dragger>
-            <div style="margin-bottom: 12px">
-              <n-icon size="48" :depth="3">
-                <archive-icon />
-              </n-icon>
-            </div>
-            <n-text style="font-size: 16px">
-              点击或者拖动文件到该区域来上传
-            </n-text>
-            <n-p depth="3" style="margin: 8px 0 0 0">
-              检查两份pdf中爆炸图与安装图不一致的部分
-            </n-p>
-          </n-upload-dragger>
-        </n-upload>
-        <n-button :disabled="loadingUpload" @click="handleUpload">
-          开始转换
-        </n-button>
-      </div>
-      <!-- preview -->
-      <n-spin :show="loadingUpload">
-        <div class="box-divider">
-          <div class="box-divider-item">
-            <n-h3 prefix="bar">
-              文件1中的图像预览
-              {{ `${images[0].length} / ${progress[0]}` }}
-            </n-h3>
-            <div class="scroll-box">
-              <n-scrollbar class="n-scrollbar" x-scrollable>
-                <div class="preview-box">
-                  <n-image
-                    v-for="(img, i) in images[0]"
-                    :key="i"
-                    :src="img"
-                    alt="image"
-                    height="200px"
-                    @click="(e) => handlePreviewClick(0, i)"
-                  />
-                </div>
-              </n-scrollbar>
-              <div class="preview-crop">
-                <n-image
-                  v-show="cropend[0]"
-                  :src="cropend[0]"
-                  height="120px"
-                  width="100%"
-                  alt="image"
-                />
-              </div>
-            </div>
+  <n-space vertical>
+    <!-- upload -->
+    <div>
+      <n-h3 prefix="bar">1. 上传PDF</n-h3>
+      <n-upload
+        multiple
+        ref="upload"
+        accept=".pdf"
+        :max="2"
+        :default-upload="false"
+        v-model:file-list="fileList"
+        :disabled="loadingUpload"
+        @change="handleChange"
+      >
+        <n-upload-dragger>
+          <div style="margin-bottom: 12px">
+            <n-icon size="48" :depth="3">
+              <archive-icon />
+            </n-icon>
           </div>
-          <div class="box-divider-item">
-            <n-h3 prefix="bar"
-              >文件2中的图像预览
-              {{ `${images[1].length} / ${progress[1]}` }}</n-h3
-            >
-            <div class="scroll-box">
-              <n-scrollbar x-scrollable>
-                <div class="preview-box">
-                  <n-image
-                    v-for="(img, i) in images[1]"
-                    :key="i"
-                    :src="img"
-                    alt="image"
-                    height="200px"
-                    @click="(e) => handlePreviewClick(1, i)"
-                  />
-                </div>
-              </n-scrollbar>
-              <div class="preview-crop">
-                <n-image
-                  v-show="cropend[1]"
-                  :src="cropend[1]"
-                  height="120px"
-                  width="100%"
-                  alt="image"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </n-spin>
-      <!-- result -->
+          <n-text style="font-size: 16px">
+            点击或者拖动文件到该区域来上传
+          </n-text>
+          <n-p depth="3" style="margin: 8px 0 0 0">
+            检查两份pdf中爆炸图与安装图不一致的部分
+          </n-p>
+        </n-upload-dragger>
+      </n-upload>
+      <n-button :disabled="loadingUpload" @click="handleUpload">
+        开始转换
+      </n-button>
+    </div>
+    <!-- preview -->
+    <n-spin :show="loadingUpload">
       <div class="box-divider">
         <div class="box-divider-item">
-          <n-h3 prefix="bar">3. 选取对比区域</n-h3>
-          <n-button @click="handleCompare"> 开始对比 </n-button>
-          <vue-picture-cropper
-            :boxStyle="boxStyle"
-            :img="images[current[0]][current[1]]"
-            :options="options"
-          />
-        </div>
-        <div class="box-divider-item">
-          <n-spin :show="loadingCompare">
-            <n-h3 prefix="bar">5. 对比结果</n-h3>
-            <n-button @click="handleSaveResult"> 保存结果 </n-button>
-            <div class="preview-box preview-box-result">
+          <n-h3 prefix="bar">
+            文件1中的图像预览
+            {{ `${images[0].length} / ${progress[0]}` }}
+          </n-h3>
+          <div class="scroll-box">
+            <n-scrollbar class="n-scrollbar" x-scrollable>
+              <div class="preview-box">
+                <n-image
+                  v-for="(img, i) in images[0]"
+                  :key="i"
+                  :src="img"
+                  alt="image"
+                  height="200px"
+                  @click="(e) => handlePreviewClick(0, i)"
+                />
+              </div>
+            </n-scrollbar>
+            <div class="preview-crop">
               <n-image
-                v-show="response.result"
-                :src="response.result"
-                alt="image"
+                v-show="cropend[0]"
+                :src="cropend[0]"
+                height="120px"
                 width="100%"
+                alt="image"
               />
             </div>
-          </n-spin>
+          </div>
+        </div>
+        <div class="box-divider-item">
+          <n-h3 prefix="bar"
+            >文件2中的图像预览
+            {{ `${images[1].length} / ${progress[1]}` }}</n-h3
+          >
+          <div class="scroll-box">
+            <n-scrollbar x-scrollable>
+              <div class="preview-box">
+                <n-image
+                  v-for="(img, i) in images[1]"
+                  :key="i"
+                  :src="img"
+                  alt="image"
+                  height="200px"
+                  @click="(e) => handlePreviewClick(1, i)"
+                />
+              </div>
+            </n-scrollbar>
+            <div class="preview-crop">
+              <n-image
+                v-show="cropend[1]"
+                :src="cropend[1]"
+                height="120px"
+                width="100%"
+                alt="image"
+              />
+            </div>
+          </div>
         </div>
       </div>
-    </n-space>
-  </div>
+    </n-spin>
+    <!-- result -->
+    <div class="box-divider">
+      <div class="box-divider-item">
+        <n-h3 prefix="bar">3. 选取对比区域</n-h3>
+        <n-button @click="handleCompare"> 开始对比 </n-button>
+        <vue-picture-cropper
+          :boxStyle="boxStyle"
+          :img="images[current[0]][current[1]]"
+          :options="options"
+        />
+      </div>
+      <div class="box-divider-item">
+        <n-spin :show="loadingCompare">
+          <n-h3 prefix="bar">5. 对比结果</n-h3>
+          <n-button @click="handleSaveResult"> 保存结果 </n-button>
+          <div class="preview-box preview-box-result">
+            <n-image
+              v-show="response.result"
+              :src="response.result"
+              alt="image"
+              width="100%"
+            />
+          </div>
+        </n-spin>
+      </div>
+    </div>
+  </n-space>
 </template>
 
 <style scoped>

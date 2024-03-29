@@ -1,21 +1,6 @@
 <script setup>
 import { onUnmounted, ref } from 'vue';
-import {
-  NButton,
-  NUpload,
-  NImage,
-  NImageGroup,
-  NSpin,
-  NSpace,
-  NPopselect,
-  NH3,
-  NScrollbar,
-  NBadge,
-  NSelect,
-  NDivider,
-  NTag,
-  useMessage,
-} from 'naive-ui';
+import { useMessage } from 'naive-ui';
 import { lyla, SOCKET_URL } from '@/request';
 import { CONST } from '@/utils';
 
