@@ -15,8 +15,9 @@ const upload = ref(null);
 const ws = ref(null);
 
 const fileList = ref([]);
-const images = ref([]);
-const completed = ref([false, false]);
+const filePath = ref(['', '']);
+const active = ref(false);
+const start = ref(['', '']);
 const response = ref({
   code: 0,
   msg: '',
@@ -28,6 +29,8 @@ const response = ref({
 });
 
 const loading = ref(false);
+
+const isComplete = () => filePath.value.every((_) => _)
 
 const openWebsocket = () => {
   loading.value = true;
@@ -44,11 +47,13 @@ const openWebsocket = () => {
   };
   websocket.onmessage = (e) => {
     const data = JSON.parse(e.data);
-    const { total, current, img_base64 } = data;
-    if (img_base64) {
-      images.value.push(img_base64);
-      completed.value[options.index] = current == total;
-      completed.value.every((_) => _) && ws.value.close();
+    const { file_path, options } = data;
+    if (file_path) {
+      filePath.value[options.index] = file_path;
+      if (isComplete()) {
+        message.info('上传已完成');
+        ws.value.close();
+      }
     }
   };
   websocket.onerror = (e) => {
@@ -63,7 +68,7 @@ const sendMessage = (index) => {
   const size = file.size;
   const total = Math.ceil(size / SHARD_SIZE);
   const params = {
-    type: WEBSOCKET_TYPE.PDF2IMG,
+    type: WEBSOCKET_TYPE.COMPARE,
     fileName: file.name,
     total,
     options: {
@@ -90,15 +95,21 @@ const sendMessage = (index) => {
 
 const handleUpload = () => {
   if (fileList.value.length != 2) {
-    message.info(INFO_NO_FILE);
+    message.error(INFO_NO_FILE);
     return;
   }
-  // openWebsocket();
+  openWebsocket();
+};
+
+const handleCompare = () => {
+  if(!isComplete()){
+    message.error('请先上传文件')
+    return
+  }
   loading.value = true;
   const formData = new FormData();
-  for (const item of fileList.value) {
-    formData.append(item.file.name, item.file);
-  }
+  formData.append('file_path_1', filePath.value[0]);
+  formData.append('file_path_2', filePath.value[1]);
   lyla
     .post('/fullPage', { body: formData })
     .then((res) => {
@@ -114,37 +125,70 @@ const handleUpload = () => {
   <n-space vertical>
     <!-- upload -->
     <div>
-      <n-h3 prefix="bar">1. 上传PDF</n-h3>
-      <n-upload
-        multiple
-        ref="upload"
-        accept=".pdf"
-        :max="2"
-        :default-upload="false"
-        v-model:file-list="fileList"
-        :disabled="loading"
-        @change="(data) => (fileList = data.fileList)"
-      >
-        <n-upload-dragger>
-          <div style="margin-bottom: 12px">
-            <n-icon size="48" :depth="3">
-              <archive-icon />
-            </n-icon>
-          </div>
-          <n-text style="font-size: 16px">
-            点击或者拖动文件到该区域来上传
-          </n-text>
-          <n-p depth="3" style="margin: 8px 0 0 0">
-            按页检查两份pdf中不一致的部分
-          </n-p>
-        </n-upload-dragger>
-      </n-upload>
-      <n-button :disabled="loading" @click="handleUpload"> 开始检测 </n-button>
+      <n-spin :show="loading">
+        <n-h3 prefix="bar">1. 上传PDF</n-h3>
+        <n-upload
+          multiple
+          ref="upload"
+          accept=".pdf"
+          :max="2"
+          :default-upload="false"
+          v-model:file-list="fileList"
+          :disabled="loading"
+          @change="(data) => (fileList = data.fileList)"
+        >
+          <n-upload-dragger>
+            <div style="margin-bottom: 12px">
+              <n-icon size="48" :depth="3">
+                <archive-icon />
+              </n-icon>
+            </div>
+            <n-text style="font-size: 16px">
+              点击或者拖动文件到该区域来上传
+            </n-text>
+            <n-p depth="3" style="margin: 8px 0 0 0">
+              按页检查两份pdf中不一致的部分
+            </n-p>
+          </n-upload-dragger>
+        </n-upload>
+        <n-button :disabled="loading" @click="handleUpload">
+          上传文件
+        </n-button>
+      </n-spin>
     </div>
     <!-- result -->
     <div>
       <n-spin :show="loading">
-        <n-h3 prefix="bar">2. 检测结果</n-h3>
+        <n-h3 prefix="bar">2. 对比检测</n-h3>
+        <n-space align="center">
+          <n-switch v-model:value="active" size="large">
+            <template #checked> 指定 </template>
+            <template #unchecked> 指定 </template>
+          </n-switch>
+          <n-input-group>
+            <n-input-group-label>文件一</n-input-group-label>
+            <n-input
+              :disabled="!active"
+              v-model:value="start[0]"
+              autosize
+              placeholder="起始"
+            />
+            <n-input-group-label>页</n-input-group-label>
+          </n-input-group>
+          <n-input-group>
+            <n-input-group-label>文件二</n-input-group-label>
+            <n-input
+              :disabled="!active"
+              v-model:value="start[1]"
+              autosize
+              placeholder="起始"
+            />
+            <n-input-group-label>页</n-input-group-label>
+          </n-input-group>
+          <n-button :disabled="loading" @click="handleCompare">
+            对比检测
+          </n-button>
+        </n-space>
         <n-p v-show="response.data?.error_msg">
           {{ response.data?.error_msg }}
         </n-p>
@@ -181,6 +225,9 @@ const handleUpload = () => {
 }
 .n-h3 {
   margin-bottom: 8px;
+}
+.n-input {
+  min-width: 80px;
 }
 .preview-box {
   display: flex;

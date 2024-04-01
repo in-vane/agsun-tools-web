@@ -1,7 +1,7 @@
 import { createLyla } from '@lylajs/web';
 
-const HOST = '10.22.148.91'
-// const HOST = 'localhost'
+// const HOST = '10.22.148.91'
+const HOST = 'localhost'
 const PORT = 8888;
 const SOCKET_URL = `ws://${HOST}:${PORT}/websocket`;
 
