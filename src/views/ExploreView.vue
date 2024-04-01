@@ -4,16 +4,26 @@ import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, SOCKET_URL } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
-import { CONST } from '@/utils';
+import {
+  SHARD_SIZE,
+  PDF2IMG_MODE,
+  MESSAGE_ERROR_PARAMS,
+  WEBSOCKET_TYPE,
+} from '@/config/const.config';
 
 const message = useMessage();
 const upload = ref(null);
 const ws = ref(null);
-const isComplete = ref([false, false]);
+const completed = ref([false, false]);
 
 const fileList = ref([]);
+const active = ref(false);
+const limit = ref([
+  { start: '', end: '' },
+  { start: '', end: '' },
+]);
 const images = ref([[], []]);
-const progress = ref([0, 0]);
+const progress = ref(['', '']);
 const current = ref([0, 0]);
 const cropend = ref([]);
 const response = ref({ result: '' });
@@ -21,12 +31,38 @@ const response = ref({ result: '' });
 const loadingUpload = ref(false);
 const loadingCompare = ref(false);
 
+/**
+ * @param {number} i 第i个文件的limit参数
+ */
+const isLimitError = (i) => {
+  const params = limit.value[i];
+  let start = parseInt(params.start);
+  let end = parseInt(params.end);
+  if (Number.isNaN(start) || Number.isNaN(end)) {
+    message.error(MESSAGE_ERROR_PARAMS);
+    return true;
+  }
+  if (start < 0 || end < 0 || end < start) {
+    message.error(MESSAGE_ERROR_PARAMS);
+    return true;
+  }
+
+  return false;
+};
+
 const openWebsocket = () => {
   loadingUpload.value = true;
   const websocket = new WebSocket(SOCKET_URL);
 
   websocket.onopen = (e) => {
     console.log('connected: ', e);
+    if (active.value) {
+      const isError1 = isLimitError(0);
+      const isError2 = isLimitError(1);
+      if (isError1 || isError2) {
+        return;
+      }
+    }
     sendMessage(0);
     sendMessage(1);
   };
@@ -39,45 +75,54 @@ const openWebsocket = () => {
     const { total, current, img_base64, options } = data;
     if (img_base64) {
       images.value[options.index].push(img_base64);
-      progress.value[options.index] = total; // 总数，用以显示进度
-      isComplete.value[options.index] = current == total; // 是否完成
-      isComplete.value.every((_) => _) && ws.value.close(); // 两个都完成后关闭
+      progress.value[options.index] = `${current} / ${total}`;
+      completed.value[options.index] = current == total;
+      completed.value.every((_) => _) && ws.value.close();
     }
   };
   websocket.onerror = (e) => {
     console.log('error: ', e);
+    ws.value.close();
   };
 
   ws.value = websocket;
 };
 
+/**
+ * @param {number} index 第i个文件
+ */
 const sendMessage = (index) => {
   const file = fileList.value[index].file;
   const size = file.size;
-  const shardSize = 1024 * 1024; // 以1MB为一个分片
-  const shardCount = Math.ceil(size / shardSize); // 总片数
+  const total = Math.ceil(size / SHARD_SIZE);
+  const params = {
+    type: WEBSOCKET_TYPE.PDF2IMG,
+    fileName: file.name,
+    total,
+    options: {
+      mode: PDF2IMG_MODE.VECTOR,
+      index,
+    },
+  };
+  if (active.value) {
+    const { start, end } = limit.value[index];
+    Object.assign(params.options, { start, end });
+  }
 
-  for (let i = 0; i < shardCount; i++) {
-    const start = i * shardSize;
-    const end = Math.min(size, start + shardSize);
+  for (let i = 0; i < total; i++) {
+    const start = i * SHARD_SIZE;
+    const end = Math.min(size, start + SHARD_SIZE);
     const fileClip = file.slice(start, end);
     const reader = new FileReader();
     reader.onload = (e) => {
-      const message = {
-        fileName: file.name,
+      Object.assign(params, {
         file: reader.result,
-        total: shardCount,
         current: i + 1,
-        options: { mode: CONST.MODE_PDF2IMG.MODE_VECTOR, index },
-      };
-      ws.value.send(JSON.stringify(message));
+      });
+      ws.value.send(JSON.stringify(params));
     };
     reader.readAsDataURL(fileClip);
   }
-};
-
-const handleChange = (data) => {
-  fileList.value = data.fileList;
 };
 
 const handlePreviewClick = (selectedPDF, selectedImg) => {
@@ -91,8 +136,8 @@ const handleGetCrop = () => {
 };
 
 const handleUpload = () => {
-  if (!fileList.value.length) {
-    message.info('请选择文件');
+  if (fileList.value.length != 2) {
+    message.info('请选择2份文件');
     return;
   }
   openWebsocket();
@@ -167,7 +212,7 @@ onUnmounted(() => {
         :default-upload="false"
         v-model:file-list="fileList"
         :disabled="loadingUpload"
-        @change="handleChange"
+        @change="(data) => (fileList = data.fileList)"
       >
         <n-upload-dragger>
           <div style="margin-bottom: 12px">
@@ -183,18 +228,56 @@ onUnmounted(() => {
           </n-p>
         </n-upload-dragger>
       </n-upload>
-      <n-button :disabled="loadingUpload" @click="handleUpload">
-        开始转换
-      </n-button>
+      <n-space align="center">
+        <n-switch v-model:value="active" size="large">
+          <template #checked> 指定 </template>
+          <template #unchecked> 指定 </template>
+        </n-switch>
+        <n-input-group>
+          <n-input-group-label>文件一</n-input-group-label>
+          <n-input
+            :disabled="!active"
+            v-model:value="limit[0].start"
+            autosize
+            placeholder="从"
+          />
+          <n-input
+            :disabled="!active"
+            v-model:value="limit[0].end"
+            autosize
+            placeholder="到"
+          />
+        </n-input-group>
+        <n-input-group>
+          <n-input-group-label>文件二</n-input-group-label>
+          <n-input
+            :disabled="!active"
+            v-model:value="limit[1].start"
+            autosize
+            placeholder="从"
+          />
+          <n-input
+            :disabled="!active"
+            v-model:value="limit[1].end"
+            autosize
+            placeholder="到"
+          />
+        </n-input-group>
+        <n-button
+          type="primary"
+          ghost
+          :disabled="loadingUpload"
+          @click="handleUpload"
+        >
+          开始转换
+        </n-button>
+      </n-space>
     </div>
     <!-- preview -->
     <n-spin :show="loadingUpload">
       <div class="box-divider">
         <div class="box-divider-item">
-          <n-h3 prefix="bar">
-            文件1中的图像预览
-            {{ `${images[0].length} / ${progress[0]}` }}
-          </n-h3>
+          <n-h3 prefix="bar"> 文件1中的图像预览 {{ progress[0] }} </n-h3>
           <div class="scroll-box">
             <n-scrollbar class="n-scrollbar" x-scrollable>
               <div class="preview-box">
@@ -220,10 +303,7 @@ onUnmounted(() => {
           </div>
         </div>
         <div class="box-divider-item">
-          <n-h3 prefix="bar"
-            >文件2中的图像预览
-            {{ `${images[1].length} / ${progress[1]}` }}</n-h3
-          >
+          <n-h3 prefix="bar">文件2中的图像预览 {{ progress[1] }}</n-h3>
           <div class="scroll-box">
             <n-scrollbar x-scrollable>
               <div class="preview-box">
@@ -253,8 +333,12 @@ onUnmounted(() => {
     <!-- result -->
     <div class="box-divider">
       <div class="box-divider-item">
-        <n-h3 prefix="bar">3. 选取对比区域</n-h3>
-        <n-button @click="handleCompare"> 开始对比 </n-button>
+        <n-space justify="space-between">
+          <n-h3 prefix="bar">3. 选取对比区域</n-h3>
+          <n-button type="primary" ghost @click="handleCompare">
+            开始对比
+          </n-button>
+        </n-space>
         <vue-picture-cropper
           :boxStyle="boxStyle"
           :img="images[current[0]][current[1]]"
@@ -263,8 +347,12 @@ onUnmounted(() => {
       </div>
       <div class="box-divider-item">
         <n-spin :show="loadingCompare">
-          <n-h3 prefix="bar">5. 对比结果</n-h3>
-          <n-button @click="handleSaveResult"> 保存结果 </n-button>
+          <n-space justify="space-between">
+            <n-h3 prefix="bar">5. 对比结果</n-h3>
+            <n-button type="primary" ghost @click="handleSaveResult">
+              保存结果
+            </n-button>
+          </n-space>
           <div class="preview-box preview-box-result">
             <n-image
               v-show="response.result"
@@ -319,5 +407,8 @@ onUnmounted(() => {
 .preview-box-result {
   margin-top: 8px;
   min-height: 400px;
+}
+.n-input {
+  min-width: 80px;
 }
 </style>

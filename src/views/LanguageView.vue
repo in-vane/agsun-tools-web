@@ -1,25 +1,38 @@
 <script setup>
 import { ref } from 'vue';
+import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla } from '@/request';
+import { INFO_NO_FILE, MESSAGE_ERROR_PARAMS } from '@/config/const.config.js';
 
 const upload = ref(null);
+const message = useMessage();
+
 const fileList = ref([]);
-const response = ref({
-  code: -1,
-  data: {},
-  msg: '',
-});
+const limit = ref('');
+const response = ref({ code: -1, data: {}, msg: '' });
+
 const loading = ref(false);
 
-const handleChange = (data) => {
-  fileList.value = data.fileList;
-};
-
 const handleUpload = () => {
+  if (!fileList.value.length) {
+    message.error(INFO_NO_FILE);
+    return;
+  }
+  let n = parseInt(limit.value);
+  if (Number.isNaN(n)) {
+    message.error(MESSAGE_ERROR_PARAMS);
+    return;
+  }
+  if (n < 0) {
+    message.error(MESSAGE_ERROR_PARAMS);
+    return;
+  }
   loading.value = true;
   const formData = new FormData();
   formData.append('file', fileList.value[0].file);
+  formData.append('limit', n);
+
   lyla
     .post('/language', { body: formData })
     .then((res) => {
@@ -42,14 +55,16 @@ const columns = [
 
 <template>
   <n-space vertical>
+    <!-- upload -->
     <n-spin :show="loading">
       <n-h3 prefix="bar">1. 上传PDF</n-h3>
       <n-upload
-        multiple
         ref="upload"
+        accept=".pdf"
+        :max="1"
         :default-upload="false"
         v-model:file-list="fileList"
-        @change="handleChange"
+        @change="(data) => (fileList = data.fileList)"
       >
         <n-upload-dragger>
           <div style="margin-bottom: 12px">
@@ -65,8 +80,18 @@ const columns = [
           </n-p>
         </n-upload-dragger>
       </n-upload>
-      <n-button @click="handleUpload"> 开始检查 </n-button>
+      <n-space>
+        <n-input-group>
+          <n-input-group-label>遍历</n-input-group-label>
+          <n-input v-model:value="limit" autosize placeholder="所有" />
+          <n-input-group-label>页以检索目录</n-input-group-label>
+        </n-input-group>
+        <n-button type="primary" ghost @click="handleUpload">
+          开始检查
+        </n-button>
+      </n-space>
     </n-spin>
+    <!-- result -->
     <div v-show="response.code != -1">
       <n-h3
         prefix="bar"
@@ -92,6 +117,9 @@ const columns = [
 }
 .n-h3 {
   margin-bottom: 8px;
+}
+.n-input {
+  min-width: 80px;
 }
 :deep(.row-error td) {
   color: rgb(208, 48, 80);

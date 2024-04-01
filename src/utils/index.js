@@ -1,18 +1,6 @@
 import { h } from 'vue';
 import { NIcon, NTag } from 'naive-ui';
 
-export const CONST = {
-  MIME: {
-    img: ['png', 'png'],
-    pdf: ['pdf', 'pdf'],
-    excel: ['vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'xlsx'],
-  },
-  MODE_PDF2IMG: {
-    MODE_NORMAL: 0,
-    MODE_VECTOR: 1,
-  },
-};
-
 /**
  * render 图标
  * */
@@ -42,28 +30,36 @@ export function renderNew(
     );
 }
 
-export const handleDownload = (value, fileType) => {
-  const mime = CONST.MIME[fileType];
-  // 将 base64 编码的字符串转换成二进制数据
-  const byteCharacters = atob(value);
-  const byteNumbers = new Array(byteCharacters.length);
+// export const CONST = {
+//   MIME: {
+//     img: ['png', 'png'],
+//     pdf: ['pdf', 'pdf'],
+//     excel: ['vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'xlsx'],
+//   },
+// };
 
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
+// export const handleDownload = (value, fileType) => {
+//   const mime = CONST.MIME[fileType];
+//   // 将 base64 编码的字符串转换成二进制数据
+//   const byteCharacters = atob(value);
+//   const byteNumbers = new Array(byteCharacters.length);
 
-  // 创建一个 Blob 对象
-  const blob = new Blob([byteArray], { type: `application/${mime[0]}` });
+//   for (let i = 0; i < byteCharacters.length; i++) {
+//     byteNumbers[i] = byteCharacters.charCodeAt(i);
+//   }
+//   const byteArray = new Uint8Array(byteNumbers);
 
-  // 生成一个临时的 URL
-  const url = URL.createObjectURL(blob);
-  // 创建一个链接并设置下载属性
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `result.${mime[1]}`;
-  a.click();
+//   // 创建一个 Blob 对象
+//   const blob = new Blob([byteArray], { type: `application/${mime[0]}` });
 
-  // 释放临时的 URL
-  URL.revokeObjectURL(url);
-};
+//   // 生成一个临时的 URL
+//   const url = URL.createObjectURL(blob);
+//   // 创建一个链接并设置下载属性
+//   const a = document.createElement('a');
+//   a.href = url;
+//   a.download = `result.${mime[1]}`;
+//   a.click();
+
+//   // 释放临时的 URL
+//   URL.revokeObjectURL(url);
+// };

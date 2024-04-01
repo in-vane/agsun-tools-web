@@ -3,7 +3,12 @@ import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, SOCKET_URL } from '@/request';
-import { CONST } from '@/utils';
+import {
+  SHARD_SIZE,
+  PDF2IMG_MODE,
+  INFO_NO_FILE,
+  WEBSOCKET_TYPE,
+} from '@/config/const.config';
 
 const message = useMessage();
 const upload = ref(null);
@@ -11,7 +16,7 @@ const ws = ref(null);
 
 const fileList = ref([]);
 const images = ref([]);
-const current = ref(0);
+const completed = ref([false, false]);
 const response = ref({
   code: 0,
   msg: '',
@@ -42,9 +47,8 @@ const openWebsocket = () => {
     const { total, current, img_base64 } = data;
     if (img_base64) {
       images.value.push(img_base64);
-      progress.value = total; // 总数，用以显示进度
-      current.value = current;
-      current == total && ws.value.close();
+      completed.value[options.index] = current == total;
+      completed.value.every((_) => _) && ws.value.close();
     }
   };
   websocket.onerror = (e) => {
@@ -57,31 +61,36 @@ const openWebsocket = () => {
 const sendMessage = (index) => {
   const file = fileList.value[index].file;
   const size = file.size;
-  const shardSize = 1024 * 1024; // 以1MB为一个分片
-  const shardCount = Math.ceil(size / shardSize); // 总片数
+  const total = Math.ceil(size / SHARD_SIZE);
+  const params = {
+    type: WEBSOCKET_TYPE.PDF2IMG,
+    fileName: file.name,
+    total,
+    options: {
+      mode: PDF2IMG_MODE.VECTOR,
+      index,
+    },
+  };
 
-  for (let i = 0; i < shardCount; i++) {
-    const start = i * shardSize;
-    const end = Math.min(size, start + shardSize);
+  for (let i = 0; i < total; i++) {
+    const start = i * SHARD_SIZE;
+    const end = Math.min(size, start + SHARD_SIZE);
     const fileClip = file.slice(start, end);
     const reader = new FileReader();
     reader.onload = (e) => {
-      const message = {
-        fileName: file.name,
+      Object.assign(params, {
         file: reader.result,
-        total: shardCount,
         current: i + 1,
-        options: { mode: CONST.MODE_PDF2IMG.MODE_NORMAL },
-      };
-      ws.value.send(JSON.stringify(message));
+      });
+      ws.value.send(JSON.stringify(params));
     };
     reader.readAsDataURL(fileClip);
   }
 };
 
 const handleUpload = () => {
-  if (!fileList.value.length) {
-    message.info('请选择文件');
+  if (fileList.value.length != 2) {
+    message.info(INFO_NO_FILE);
     return;
   }
   // openWebsocket();
