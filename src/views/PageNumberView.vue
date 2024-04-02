@@ -8,9 +8,13 @@ const upload = ref(null);
 
 const fileList = ref([]);
 const response = ref({
-  error: false,
-  error_page: [],
-  result: [],
+  code: 0,
+  data: {
+    error: false,
+    error_page: [],
+    result: [],
+  },
+  msg: '',
 });
 
 const loading = ref(false);
@@ -61,16 +65,14 @@ const handleUpload = () => {
           </n-p>
         </n-upload-dragger>
       </n-upload>
-      <n-button type="primary" ghost @click="handleUpload">
-        开始检查
-      </n-button>
+      <n-button type="primary" ghost @click="handleUpload"> 开始检查 </n-button>
     </n-spin>
-    <div v-show="response.error">
+    <div v-show="response.data?.error">
       <n-h3 prefix="bar">页码错误的页面</n-h3>
       <n-image-group>
         <n-space>
           <n-image
-            v-for="(img, i) in response.result"
+            v-for="(img, i) in response.data?.result"
             :key="i"
             :src="img"
             alt="image"

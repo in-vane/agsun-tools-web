@@ -28,12 +28,13 @@ const response = ref({
   },
 });
 
-const loading = ref(false);
+const loadingUpload = ref(false);
+const loadingCompare = ref(false);
 
 const isComplete = () => filePath.value.every((_) => _);
 
 const openWebsocket = () => {
-  loading.value = true;
+  loadingUpload.value = true;
   const websocket = new WebSocket(SOCKET_URL);
 
   websocket.onopen = (e) => {
@@ -43,7 +44,7 @@ const openWebsocket = () => {
   };
   websocket.onclose = (e) => {
     console.log('disconnected: ', e);
-    loading.value = false;
+    loadingUpload.value = false;
   };
   websocket.onmessage = (e) => {
     const data = JSON.parse(e.data);
@@ -106,10 +107,12 @@ const handleCompare = () => {
     message.info('请先上传文件');
     return;
   }
-  loading.value = true;
+  loadingCompare.value = true;
   const formData = new FormData();
   formData.append('file_path_1', filePath.value[0]);
   formData.append('file_path_2', filePath.value[1]);
+  formData.append('start_1', start.value[0]);
+  formData.append('start_2', start.value[1]);
   lyla
     .post('/fullPage', { body: formData })
     .then((res) => {
@@ -117,7 +120,7 @@ const handleCompare = () => {
       response.value = res.json;
     })
     .catch((err) => {})
-    .finally(() => (loading.value = false));
+    .finally(() => (loadingCompare.value = false));
 };
 </script>
 
@@ -125,7 +128,7 @@ const handleCompare = () => {
   <n-space vertical>
     <!-- upload -->
     <div>
-      <n-spin :show="loading">
+      <n-spin :show="loadingUpload">
         <n-h3 prefix="bar">1. 上传PDF</n-h3>
         <n-upload
           multiple
@@ -134,7 +137,7 @@ const handleCompare = () => {
           :max="2"
           :default-upload="false"
           v-model:file-list="fileList"
-          :disabled="loading"
+          :disabled="loadingUpload"
           @change="(data) => (fileList = data.fileList)"
         >
           <n-upload-dragger>
@@ -151,19 +154,14 @@ const handleCompare = () => {
             </n-p>
           </n-upload-dragger>
         </n-upload>
-        <n-button
-          type="primary"
-          ghost
-          :disabled="loading"
-          @click="handleUpload"
-        >
+        <n-button type="primary" ghost @click="handleUpload">
           上传文件
         </n-button>
       </n-spin>
     </div>
     <!-- result -->
     <div>
-      <n-spin :show="loading">
+      <n-spin :show="loadingCompare">
         <n-h3 prefix="bar">2. 对比检测</n-h3>
         <n-space align="center">
           <n-switch v-model:value="active" size="large">
@@ -193,7 +191,7 @@ const handleCompare = () => {
           <n-button
             type="primary"
             ghost
-            :disabled="loading"
+            :disabled="loadingCompare"
             @click="handleCompare"
           >
             对比检测

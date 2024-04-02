@@ -3,7 +3,8 @@ import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla } from '@/request';
-import { INFO_NO_FILE, MESSAGE_ERROR_PARAMS } from '@/config/const.config.js';
+import { INFO_NO_FILE } from '@/config/const.config.js';
+import { onlyAllowNumber } from '@/utils';
 
 const upload = ref(null);
 const message = useMessage();
@@ -20,14 +21,7 @@ const handleUpload = () => {
     return;
   }
   let n = parseInt(limit.value);
-  if (Number.isNaN(n)) {
-    message.error(MESSAGE_ERROR_PARAMS);
-    return;
-  }
-  if (n < 0) {
-    message.error(MESSAGE_ERROR_PARAMS);
-    return;
-  }
+  Number.isNaN(n) && (n = 0);
   loading.value = true;
   const formData = new FormData();
   formData.append('file', fileList.value[0].file);
@@ -83,7 +77,12 @@ const columns = [
       <n-space>
         <n-input-group>
           <n-input-group-label>遍历</n-input-group-label>
-          <n-input v-model:value="limit" autosize placeholder="所有" />
+          <n-input
+            v-model:value="limit"
+            :allow-input="onlyAllowNumber"
+            autosize
+            placeholder="所有"
+          />
           <n-input-group-label>页以检索目录</n-input-group-label>
         </n-input-group>
         <n-button type="primary" ghost @click="handleUpload">

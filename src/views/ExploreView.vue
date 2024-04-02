@@ -10,6 +10,7 @@ import {
   MESSAGE_ERROR_PARAMS,
   WEBSOCKET_TYPE,
 } from '@/config/const.config';
+import { onlyAllowNumber } from '@/utils';
 
 const message = useMessage();
 const upload = ref(null);
@@ -38,12 +39,10 @@ const isLimitError = (i) => {
   const params = limit.value[i];
   let start = parseInt(params.start);
   let end = parseInt(params.end);
-  if (Number.isNaN(start) || Number.isNaN(end)) {
-    message.error(MESSAGE_ERROR_PARAMS);
-    return true;
-  }
-  if (start < 0 || end < 0 || end < start) {
-    message.error(MESSAGE_ERROR_PARAMS);
+  Number.isNaN(start) && (start = 0);
+  Number.isNaN(end) && (end = 0);
+  if (end < start) {
+    message.error('起始页不能大于结束页');
     return true;
   }
 
@@ -51,7 +50,6 @@ const isLimitError = (i) => {
 };
 
 const openWebsocket = () => {
-  loadingUpload.value = true;
   const websocket = new WebSocket(SOCKET_URL);
 
   websocket.onopen = (e) => {
@@ -63,6 +61,7 @@ const openWebsocket = () => {
         return;
       }
     }
+    loadingUpload.value = true;
     sendMessage(0);
     sendMessage(1);
   };
@@ -238,12 +237,14 @@ onUnmounted(() => {
           <n-input
             :disabled="!active"
             v-model:value="limit[0].start"
+            :allow-input="onlyAllowNumber"
             autosize
             placeholder="从"
           />
           <n-input
             :disabled="!active"
             v-model:value="limit[0].end"
+            :allow-input="onlyAllowNumber"
             autosize
             placeholder="到"
           />
@@ -253,12 +254,14 @@ onUnmounted(() => {
           <n-input
             :disabled="!active"
             v-model:value="limit[1].start"
+            :allow-input="onlyAllowNumber"
             autosize
             placeholder="从"
           />
           <n-input
             :disabled="!active"
             v-model:value="limit[1].end"
+            :allow-input="onlyAllowNumber"
             autosize
             placeholder="到"
           />

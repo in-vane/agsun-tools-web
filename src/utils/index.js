@@ -2,6 +2,11 @@ import { h } from 'vue';
 import { NIcon, NTag } from 'naive-ui';
 
 /**
+ * 只能输入数字
+ */
+export const onlyAllowNumber = (value) => !value || /^\d+$/.test(value);
+
+/**
  * render 图标
  * */
 export function renderIcon(icon) {
