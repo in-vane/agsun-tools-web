@@ -1,10 +1,13 @@
 <script setup>
 import { ref } from 'vue';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
+import { useMessage } from 'naive-ui';
 import { lyla } from '@/request';
 import { INFO_NO_FILE } from '@/config/const.config';
 
+const message = useMessage();
 const upload = ref(null);
+
 const fileList = ref([]);
 const response = ref({
   error: false,
@@ -76,9 +79,7 @@ const renderRowClass = (rowData) =>
           </n-p>
         </n-upload-dragger>
       </n-upload>
-      <n-button type="primary" ghost @click="handleUpload">
-        开始检查
-      </n-button>
+      <n-button type="primary" ghost @click="handleUpload"> 开始检查 </n-button>
     </n-spin>
     <div>
       <n-h3 prefix="bar">2. 零件计数检测结果</n-h3>

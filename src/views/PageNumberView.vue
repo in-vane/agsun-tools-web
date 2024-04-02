@@ -1,9 +1,11 @@
 <script setup>
 import { ref } from 'vue';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
+import { useMessage } from 'naive-ui';
 import { lyla } from '@/request';
 import { INFO_NO_FILE } from '@/config/const.config';
 
+const message = useMessage();
 const upload = ref(null);
 
 const fileList = ref([]);
