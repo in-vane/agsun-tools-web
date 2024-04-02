@@ -66,7 +66,7 @@ const handleUpload = () => {
             <n-input v-model:value="size.width" autosize placeholder="宽" />
             <n-input v-model:value="size.height" autosize placeholder="高" />
           </n-input-group>
-          <n-button type="primary" :ghost="true" @click="handleUpload">
+          <n-button type="primary" ghost @click="handleUpload">
             开始检查
           </n-button>
         </n-space>

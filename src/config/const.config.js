@@ -1,4 +1,5 @@
 export const PRIMARY_COLOR = '#18a058';
+
 export const INFO_NO_FILE = '请选择文件';
 export const MESSAGE_ERROR_PARAMS = '请输入正确的参数';
 

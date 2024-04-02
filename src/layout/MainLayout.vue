@@ -19,23 +19,26 @@ import { renderIcon } from '@/utils';
 
 import agsun from '@/assets/agsun.jpeg';
 
-const l = (path, label) => () =>
+const renderLabel = (path, label) => () =>
   h(RouterLink, { to: { path } }, { default: () => label });
+
 const menuOptions = [
-  { label: l('/home', '首页'), key: 'home', icon: renderIcon(IHome) },
-  { label: l('/explore', '图例对比'), key: 'explore', icon: renderIcon(ISpark) },
-  { label: l('/fullPage', '整页对比'), key: 'fullPage', icon: renderIcon(IDoc) },
-  { label: l('/count', '零件计数'), key: 'count', icon: renderIcon(ICog) },
-  { label: l('/pageNo', '页码检查'), key: 'pageNo', icon: renderIcon(IBook) },
-  { label: l('/table', '明细表'), key: 'table', icon: renderIcon(IList) },
-  { label: l('/screw', '螺丝包'), key: 'screw', icon: renderIcon(IBuild) },
-  { label: l('/ce', 'CE表对比'), key: 'ce', icon: renderIcon(ITable) },
-  { label: l('/size', 'CE贴纸尺寸'), key: 'size', icon: renderIcon(ICrop) },
-  { label: l('/lang', '语言顺序'), key: 'lang', icon: renderIcon(ILang) },
-  { label: l('/ocr', '实物检测'), key: 'camera', icon: renderIcon(ICamera) },
+  { label: renderLabel('/home', '首页'), key: 'home', icon: renderIcon(IHome) },
+  { label: renderLabel('/explore', '图例对比'), key: 'explore', icon: renderIcon(ISpark) },
+  { label: renderLabel('/fullPage', '整页对比'), key: 'fullPage', icon: renderIcon(IDoc) },
+  { label: renderLabel('/count', '零件计数'), key: 'count', icon: renderIcon(ICog) },
+  { label: renderLabel('/pageNo', '页码检查'), key: 'pageNo', icon: renderIcon(IBook) },
+  // { label: renderLabel('/table', '明细表'), key: 'table', icon: renderIcon(IList) },
+  { label: renderLabel('/screw', '螺丝包'), key: 'screw', icon: renderIcon(IBuild) },
+  { label: renderLabel('/ce', 'CE表对比'), key: 'ce', icon: renderIcon(ITable) },
+  { label: renderLabel('/size', 'CE贴纸尺寸'), key: 'size', icon: renderIcon(ICrop) },
+  { label: renderLabel('/lang', '语言顺序'), key: 'lang', icon: renderIcon(ILang) },
+  { label: renderLabel('/ocr', '实物检测'), key: 'ocr', icon: renderIcon(ICamera) },
 ];
+
 const routeName = ref('');
 const route = useRoute();
+
 watchEffect(() => {
   routeName.value = route.name;
 });

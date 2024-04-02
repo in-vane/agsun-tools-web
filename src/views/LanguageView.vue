@@ -16,7 +16,7 @@ const loading = ref(false);
 
 const handleUpload = () => {
   if (!fileList.value.length) {
-    message.error(INFO_NO_FILE);
+    message.info(INFO_NO_FILE);
     return;
   }
   let n = parseInt(limit.value);

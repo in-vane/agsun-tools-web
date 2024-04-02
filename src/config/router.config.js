@@ -55,11 +55,11 @@ export const asyncRoutes = [
         name: 'pageNo',
         component: () => import('@/views/PageNumberView.vue'),
       },
-      {
-        path: '/table',
-        name: 'table',
-        component: () => import('@/views/TableView.vue'),
-      },
+      // {
+      //   path: '/table',
+      //   name: 'table',
+      //   component: () => import('@/views/TableView.vue'),
+      // },
       {
         path: '/screw',
         name: 'screw',

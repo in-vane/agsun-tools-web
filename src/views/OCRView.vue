@@ -4,6 +4,7 @@ import { useMessage } from 'naive-ui';
 import { lyla, SOCKET_URL } from '@/request';
 import {
   SHARD_SIZE,
+  INFO_NO_FILE,
   PDF2IMG_MODE,
   WEBSOCKET_TYPE,
 } from '@/config/const.config';
@@ -97,7 +98,7 @@ const sendMessage = () => {
 
 const handleUploadPDF = () => {
   if (!fileList.value.length) {
-    message.info('请选择文件');
+    message.info(INFO_NO_FILE);
     return;
   }
   openWebsocket();
@@ -111,7 +112,7 @@ const handleCrop = () => {
 
 const handleCompare = () => {
   if (!fileList.value.length) {
-    message.info('请选择文件');
+    message.info(INFO_NO_FILE);
     return;
   }
   handleCrop();
@@ -207,7 +208,7 @@ onUnmounted(() => {
       >
         <n-button>选择文件</n-button>
       </n-upload>
-      <n-button class="upload-btn" @click="handleUploadPDF">
+      <n-button type="primary" ghost class="upload-btn" @click="handleUploadPDF">
         开始转换
       </n-button>
       <n-scrollbar x-scrollable>
@@ -241,7 +242,7 @@ onUnmounted(() => {
           <n-button :disabled="cameras.length == 0"> 切换摄像头 </n-button>
         </n-popselect>
         <n-select v-model:value="mode" :options="options" />
-        <n-button type="primary" @click="handleCompare"> 开始检测 </n-button>
+        <n-button type="primary" ghost @click="handleCompare"> 开始检测 </n-button>
       </n-space>
       <!-- video区域 -->
       <n-space>

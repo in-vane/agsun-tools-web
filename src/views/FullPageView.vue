@@ -30,7 +30,7 @@ const response = ref({
 
 const loading = ref(false);
 
-const isComplete = () => filePath.value.every((_) => _)
+const isComplete = () => filePath.value.every((_) => _);
 
 const openWebsocket = () => {
   loading.value = true;
@@ -95,16 +95,16 @@ const sendMessage = (index) => {
 
 const handleUpload = () => {
   if (fileList.value.length != 2) {
-    message.error(INFO_NO_FILE);
+    message.info(INFO_NO_FILE);
     return;
   }
   openWebsocket();
 };
 
 const handleCompare = () => {
-  if(!isComplete()){
-    message.error('请先上传文件')
-    return
+  if (!isComplete()) {
+    message.info('请先上传文件');
+    return;
   }
   loading.value = true;
   const formData = new FormData();
@@ -151,7 +151,12 @@ const handleCompare = () => {
             </n-p>
           </n-upload-dragger>
         </n-upload>
-        <n-button :disabled="loading" @click="handleUpload">
+        <n-button
+          type="primary"
+          ghost
+          :disabled="loading"
+          @click="handleUpload"
+        >
           上传文件
         </n-button>
       </n-spin>
@@ -185,7 +190,12 @@ const handleCompare = () => {
             />
             <n-input-group-label>页</n-input-group-label>
           </n-input-group>
-          <n-button :disabled="loading" @click="handleCompare">
+          <n-button
+            type="primary"
+            ghost
+            :disabled="loading"
+            @click="handleCompare"
+          >
             对比检测
           </n-button>
         </n-space>

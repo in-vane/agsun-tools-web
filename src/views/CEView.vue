@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla } from '@/request';
+import { INFO_NO_FILE } from '@/config/const.config';
 
 const message = useMessage();
 const upload = ref(null);
@@ -20,7 +21,7 @@ const loading = ref(false);
 
 const handleUpload = () => {
   if (!fileList.value.length) {
-    message.info('请选择文件');
+    message.info(INFO_NO_FILE);
     return;
   }
   loading.value = true;
@@ -70,7 +71,7 @@ const handleUpload = () => {
         <n-space>
           <n-select v-model:value="mode" :options="options" />
           <n-input type="text" placeholder="Sheet表" />
-          <n-button type="primary" @click="handleUpload"> 开始对比 </n-button>
+          <n-button type="primary" ghost @click="handleUpload"> 开始对比 </n-button>
         </n-space>
       </n-space>
     </n-spin>

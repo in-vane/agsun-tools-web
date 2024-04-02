@@ -6,6 +6,7 @@ import { lyla, SOCKET_URL } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import {
   SHARD_SIZE,
+  INFO_NO_FILE,
   PDF2IMG_MODE,
   WEBSOCKET_TYPE,
 } from '@/config/const.config';
@@ -97,7 +98,7 @@ const handleGetCrop = () => {
 
 const handleUpload = () => {
   if (!fileList.value.length) {
-    message.info('请选择文件');
+    message.info(INFO_NO_FILE);
     return;
   }
   openWebsocket();
@@ -209,7 +210,7 @@ onUnmounted(() => {
             </n-p>
           </n-upload-dragger>
         </n-upload>
-        <n-button type="primary" :ghost="true" @click="handleUpload">
+        <n-button type="primary" ghost @click="handleUpload">
           开始转换
         </n-button>
       </n-spin>
@@ -223,7 +224,7 @@ onUnmounted(() => {
           type="text"
           placeholder="请输入明细表的页码数"
         />
-        <n-button type="primary" :ghost="true" @click="handlePartCount">
+        <n-button type="primary" ghost @click="handlePartCount">
           开始任务
         </n-button>
       </n-space>
