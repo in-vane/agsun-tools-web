@@ -1,27 +1,14 @@
 <script setup>
 import { ref } from 'vue';
-import {
-  NIcon,
-  NButton,
-  NUpload,
-  NUploadDragger,
-  NText,
-  NP,
-  NImage,
-  NSpin,
-  NSpace,
-  NH3,
-  NDataTable,
-} from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla } from '@/request';
 
 const upload = ref(null);
 const fileList = ref([]);
 const response = ref({
-  error: false,
-  content_page: 0,
-  result: [],
+  code: -1,
+  data: {},
+  msg: '',
 });
 const loading = ref(false);
 
@@ -33,20 +20,16 @@ const handleUpload = () => {
   loading.value = true;
   const formData = new FormData();
   formData.append('file', fileList.value[0].file);
-  // lyla
-  //   .post('/language', { body: formData })
-  //   .then((res) => {
-  //     console.log(res);
-  //     response.value = res.json;
-  //   })
-  //   .catch((err) => {})
-  //   .finally(() => {
-  //     loading.value = false;
-  //   });
-  setTimeout(() => {
-    response.value.result = mock
-    loading.value = false;
-  }, 1000);
+  lyla
+    .post('/language', { body: formData })
+    .then((res) => {
+      console.log(res);
+      response.value = res.json;
+    })
+    .catch((err) => {})
+    .finally(() => {
+      loading.value = false;
+    });
 };
 const renderRowClass = (rowData) => (rowData.error ? 'row-error' : '');
 const columns = [
@@ -54,32 +37,6 @@ const columns = [
   { title: '页码范围', render: (_) => _.page_number.join(' ~ ') },
   { title: '顺序正误', render: (_) => (_.error ? '错误' : '正确') },
   { title: '正文语言', render: (_) => (_.error ? _.actual_language : '-') },
-];
-const mock = [
-  {
-    language: 'FR',
-    page_number: [11, 17],
-    error: true,
-    actual_language: 'EN',
-  },
-  {
-    language: 'EN',
-    page_number: [18, 24],
-    error: true,
-    actual_language: 'FR',
-  },
-  {
-    language: 'NL',
-    page_number: [4, 10],
-    error: false,
-    actual_language: 'NL',
-  },
-  {
-    language: 'DE',
-    page_number: [25, 52],
-    error: false,
-    actual_language: 'DE',
-  },
 ];
 </script>
 
@@ -110,12 +67,18 @@ const mock = [
       </n-upload>
       <n-button @click="handleUpload"> 开始检查 </n-button>
     </n-spin>
-    <div>
-      <n-h3 prefix="bar">2. 语言顺序检测结果</n-h3>
+    <div v-show="response.code != -1">
+      <n-h3
+        prefix="bar"
+        :class="`${response.code == 1 && 'n-h3-error'}`"
+        :type="response.code == 1 ? 'error' : 'success'"
+      >
+        2. 语言顺序检测结果 {{ response.code == 1 ? ': 未检测到目录' : '' }}
+      </n-h3>
       <n-data-table
         size="small"
         :columns="columns"
-        :data="response.result"
+        :data="response.data.language"
         :bordered="false"
         :row-class-name="renderRowClass"
       />
@@ -132,6 +95,15 @@ const mock = [
 }
 :deep(.row-error td) {
   color: rgb(208, 48, 80);
+  background: rgba(208, 48, 80, 0.2);
+}
+.n-h3-error::after {
+  content: ' ';
+  width: calc(100% - 8px);
+  height: 100%;
+  position: absolute;
+  left: 8px;
+  border-radius: 3px;
   background: rgba(208, 48, 80, 0.2);
 }
 </style>

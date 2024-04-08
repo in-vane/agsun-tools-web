@@ -1,22 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
-import {
-  NScrollbar,
-  NIcon,
-  NButton,
-  NInput,
-  NUpload,
-  NUploadDragger,
-  NText,
-  NP,
-  NImage,
-  NSpin,
-  NSpace,
-  NH3,
-  NDataTable,
-  NBadge,
-  useMessage,
-} from 'naive-ui';
+import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, SOCKET_URL } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
@@ -35,6 +19,10 @@ const rect = ref([]);
 const response = ref({
   error: false,
   result: [],
+  table: {
+    error_pages: [],
+    error_pages_no: [],
+  },
 });
 
 const loadingUpload = ref(false);
@@ -54,10 +42,10 @@ const openWebsocket = () => {
   };
   websocket.onmessage = (e) => {
     const data = JSON.parse(e.data);
-    const { img_base64, current } = data;
+    const { img_base64, total, current } = data;
     if (img_base64) {
       images.value.push({ src: img_base64, page: current });
-      data.current == data.total && ws.value.close();
+      current == total && ws.value.close();
     }
   };
   websocket.onerror = (e) => {
@@ -270,11 +258,14 @@ onUnmounted(() => {
     <!-- result -->
     <div>
       <n-h3 prefix="bar">3. 零件计数检测结果</n-h3>
+      <n-p v-show="response.table?.error_pages_no == 0">
+        各语言明细表与第一张相符
+      </n-p>
       <n-data-table
         size="small"
+        :bordered="false"
         :columns="columns"
         :data="response.result"
-        :bordered="false"
         :row-class-name="renderRowClass"
       />
     </div>

@@ -1,21 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import {
-  NSelect,
-  NInput,
-  NIcon,
-  NButton,
-  NUpload,
-  NUploadDragger,
-  NText,
-  NP,
-  NImage,
-  NSpin,
-  NSpace,
-  NH3,
-  NDivider,
-  useMessage,
-} from 'naive-ui';
+import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla } from '@/request';
 

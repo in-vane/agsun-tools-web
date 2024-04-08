@@ -1,3 +1,6 @@
+import { h } from 'vue';
+import { NIcon, NTag } from 'naive-ui';
+
 export const CONST = {
   MIME: {
     img: ['png', 'png'],
@@ -9,6 +12,35 @@ export const CONST = {
     MODE_VECTOR: 1,
   },
 };
+
+/**
+ * render 图标
+ * */
+export function renderIcon(icon) {
+  return () => h(NIcon, null, { default: () => h(icon) });
+}
+
+/**
+ * render new Tag
+ * */
+const newTagColors = { color: '#f90', textColor: '#fff', borderColor: '#f90' };
+export function renderNew(
+  type = 'warning',
+  text = 'New',
+  color = newTagColors
+) {
+  return () =>
+    h(
+      NTag,
+      {
+        type,
+        round: true,
+        size: 'small',
+        color,
+      },
+      { default: () => text }
+    );
+}
 
 export const handleDownload = (value, fileType) => {
   const mime = CONST.MIME[fileType];
@@ -34,11 +66,4 @@ export const handleDownload = (value, fileType) => {
 
   // 释放临时的 URL
   URL.revokeObjectURL(url);
-};
-
-export const scrollInneHeight = () => {
-  window.scrollTo({
-    top: window.innerHeight,
-    behavior: 'smooth',
-  });
 };

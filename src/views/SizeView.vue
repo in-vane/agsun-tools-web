@@ -1,20 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import {
-  NIcon,
-  NButton,
-  NUpload,
-  NUploadDragger,
-  NText,
-  NP,
-  NImage,
-  NSpin,
-  NSpace,
-  NH3,
-} from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla } from '@/request';
-import { scrollInneHeight } from '@/utils';
 
 const upload = ref(null);
 
@@ -94,7 +81,7 @@ const handleUpload = () => {
 
 <style scoped>
 .n-image {
-  border: solid 1px rgb(224, 224, 230);
+  border: 1px solid rgb(224, 224, 230);
   border-radius: 3px;
 }
 .n-h3 {
