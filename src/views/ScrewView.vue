@@ -1,9 +1,13 @@
 <script setup>
 import { ref } from 'vue';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
+import { useMessage } from 'naive-ui';
 import { lyla } from '@/request';
+import { INFO_NO_FILE } from '@/config/const.config';
 
+const message = useMessage();
 const upload = ref(null);
+
 const fileList = ref([]);
 const response = ref({
   error: false,
@@ -11,11 +15,11 @@ const response = ref({
 });
 const loading = ref(false);
 
-const handleChange = (data) => {
-  fileList.value = data.fileList;
-};
-
 const handleUpload = () => {
+  if (!fileList.value.length) {
+    message.info(INFO_NO_FILE);
+    return;
+  }
   loading.value = true;
   const formData = new FormData();
   formData.append('file', fileList.value[0].file);
@@ -46,58 +50,6 @@ const columns = [
     render: (_) => _.step_page_no.join(' / '),
   },
 ];
-const mock = [
-  {
-    type: 'A',
-    total: 4,
-    step_total: 4,
-    step_count: [4],
-    step_page_no: [50],
-  },
-  {
-    type: 'B',
-    total: 16,
-    step_total: 16,
-    step_count: [2, 6, 4, 2, 2],
-    step_page_no: [43, 44, 46, 47, 48],
-  },
-  {
-    type: 'C',
-    total: 2,
-    step_total: 2,
-    step_count: [2],
-    step_page_no: [49],
-  },
-  {
-    type: 'D',
-    total: 10,
-    step_total: 10,
-    step_count: [5, 5],
-    step_page_no: [46, 47],
-  },
-  {
-    type: 'E',
-    total: 16,
-    step_total: 16,
-    step_count: [8, 8],
-    step_page_no: [46, 47],
-  },
-  {
-    type: 'G',
-    total: 4,
-    step_total: 4,
-    step_count: [4],
-    step_page_no: [50],
-  },
-
-  {
-    type: 'F',
-    total: 11,
-    step_total: 12,
-    step_count: [4, 2, 2, 2, 2],
-    step_page_no: [45, 47, 48, 49, 50],
-  },
-];
 const renderRowClass = (rowData) =>
   rowData.total == rowData.step_total ? '' : 'row-error';
 </script>
@@ -107,11 +59,11 @@ const renderRowClass = (rowData) =>
     <n-spin :show="loading">
       <n-h3 prefix="bar">1. 上传PDF</n-h3>
       <n-upload
-        multiple
         ref="upload"
+        :max="1"
         :default-upload="false"
         v-model:file-list="fileList"
-        @change="handleChange"
+        @change="(data) => (fileList = data.fileList)"
       >
         <n-upload-dragger>
           <div style="margin-bottom: 12px">
@@ -127,9 +79,7 @@ const renderRowClass = (rowData) =>
           </n-p>
         </n-upload-dragger>
       </n-upload>
-      <n-button type="primary" :ghost="true" @click="handleUpload">
-        开始检查
-      </n-button>
+      <n-button type="primary" ghost @click="handleUpload"> 开始检查 </n-button>
     </n-spin>
     <div>
       <n-h3 prefix="bar">2. 零件计数检测结果</n-h3>

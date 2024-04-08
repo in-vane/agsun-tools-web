@@ -1,24 +1,31 @@
 <script setup>
 import { ref } from 'vue';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
+import { useMessage } from 'naive-ui';
 import { lyla } from '@/request';
+import { INFO_NO_FILE } from '@/config/const.config';
 
+const message = useMessage();
 const upload = ref(null);
 
 const fileList = ref([]);
 const response = ref({
-  error: false,
-  error_page: [],
-  result: [],
+  code: 0,
+  data: {
+    error: false,
+    error_page: [],
+    result: [],
+  },
+  msg: '',
 });
 
 const loading = ref(false);
 
-const handleChange = (data) => {
-  fileList.value = data.fileList;
-};
-
 const handleUpload = () => {
+  if (!fileList.value.length) {
+    message.info(INFO_NO_FILE);
+    return;
+  }
   loading.value = true;
   const formData = new FormData();
   formData.append('file', fileList.value[0].file);
@@ -40,11 +47,11 @@ const handleUpload = () => {
     <n-spin :show="loading">
       <n-h3 prefix="bar">选择要检查的PDF文件</n-h3>
       <n-upload
-        multiple
         ref="upload"
+        :max="1"
         :default-upload="false"
         v-model:file-list="fileList"
-        @change="handleChange"
+        @change="(data) => (fileList = data.fileList)"
       >
         <n-upload-dragger>
           <div style="margin-bottom: 12px">
@@ -60,16 +67,14 @@ const handleUpload = () => {
           </n-p>
         </n-upload-dragger>
       </n-upload>
-      <n-button type="primary" :ghost="true" @click="handleUpload">
-        开始检查
-      </n-button>
+      <n-button type="primary" ghost @click="handleUpload"> 开始检查 </n-button>
     </n-spin>
-    <div v-show="response.error">
+    <div v-show="response.data?.error">
       <n-h3 prefix="bar">页码错误的页面</n-h3>
       <n-image-group>
         <n-space>
           <n-image
-            v-for="(img, i) in response.result"
+            v-for="(img, i) in response.data?.result"
             :key="i"
             :src="img"
             alt="image"

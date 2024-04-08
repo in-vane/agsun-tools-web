@@ -1,25 +1,24 @@
 <script setup>
 import { ref } from 'vue';
+import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla } from '@/request';
+import { INFO_NO_FILE } from '@/config/const.config.js';
 
 const upload = ref(null);
+const message = useMessage();
 
 const fileList = ref([]);
-const response = ref({
-  error: false,
-  error_msg: '',
-  result: '',
-});
+const size = ref({ width: '', height: '' });
+const response = ref({ error: false, error_msg: '', result: '' });
 
 const loading = ref(false);
 
-const handleChange = (data) => {
-  console.log(data);
-  fileList.value = data.fileList;
-};
-
 const handleUpload = () => {
+  if (!fileList.value.length) {
+    message.info(INFO_NO_FILE);
+    return;
+  }
   loading.value = true;
   const formData = new FormData();
   formData.append('file', fileList.value[0].file);
@@ -45,7 +44,7 @@ const handleUpload = () => {
           :max="1"
           :default-upload="false"
           v-model:file-list="fileList"
-          @change="handleChange"
+          @change="(data) => (fileList = data.fileList)"
         >
           <n-upload-dragger>
             <div style="margin-bottom: 12px">
@@ -61,9 +60,16 @@ const handleUpload = () => {
             </n-p>
           </n-upload-dragger>
         </n-upload>
-        <n-button type="primary" :ghost="true" @click="handleUpload">
-          开始检查
-        </n-button>
+        <n-space>
+          <n-input-group>
+            <n-input-group-label>手动输入</n-input-group-label>
+            <n-input v-model:value="size.width" autosize placeholder="宽" />
+            <n-input v-model:value="size.height" autosize placeholder="高" />
+          </n-input-group>
+          <n-button type="primary" ghost @click="handleUpload">
+            开始检查
+          </n-button>
+        </n-space>
       </n-spin>
     </div>
     <div v-show="response.result">
@@ -74,12 +80,15 @@ const handleUpload = () => {
       >
         2. 检测结果: {{ response.error_msg }}
       </n-h3>
-      <n-image :src="response.result" alt="image" width="100%" />
+      <n-image :src="response.result" alt="image" height="400px" />
     </div>
   </n-space>
 </template>
 
 <style scoped>
+.n-input {
+  min-width: 80px;
+}
 .n-image {
   border: 1px solid rgb(224, 224, 230);
   border-radius: 3px;

@@ -2,7 +2,12 @@
 import { onUnmounted, ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { lyla, SOCKET_URL } from '@/request';
-import { CONST } from '@/utils';
+import {
+  SHARD_SIZE,
+  INFO_NO_FILE,
+  PDF2IMG_MODE,
+  WEBSOCKET_TYPE,
+} from '@/config/const.config';
 
 const message = useMessage();
 const ws = ref(null);
@@ -67,23 +72,25 @@ const openWebsocket = () => {
 const sendMessage = () => {
   const file = fileList.value[0].file;
   const size = file.size;
-  const shardSize = 1024 * 1024; // 以1MB为一个分片
-  const shardCount = Math.ceil(size / shardSize); // 总片数
+  const total = Math.ceil(size / SHARD_SIZE);
+  const params = {
+    type: WEBSOCKET_TYPE.PDF2IMG,
+    fileName: file.name,
+    total,
+    options: { mode: PDF2IMG_MODE.NORMAL },
+  };
 
-  for (let i = 0; i < shardCount; i++) {
-    const start = i * shardSize;
-    const end = Math.min(size, start + shardSize);
+  for (let i = 0; i < total; i++) {
+    const start = i * SHARD_SIZE;
+    const end = Math.min(size, start + SHARD_SIZE);
     const fileClip = file.slice(start, end);
     const reader = new FileReader();
     reader.onload = (e) => {
-      const message = {
-        fileName: file.name,
+      Object.assign(params, {
         file: reader.result,
-        total: shardCount,
         current: i + 1,
-        options: { mode: CONST.MODE_PDF2IMG.MODE_NORMAL },
-      };
-      ws.value.send(JSON.stringify(message));
+      });
+      ws.value.send(JSON.stringify(params));
     };
     reader.readAsDataURL(fileClip);
   }
@@ -91,7 +98,7 @@ const sendMessage = () => {
 
 const handleUploadPDF = () => {
   if (!fileList.value.length) {
-    message.info('请选择文件');
+    message.info(INFO_NO_FILE);
     return;
   }
   openWebsocket();
@@ -105,7 +112,7 @@ const handleCrop = () => {
 
 const handleCompare = () => {
   if (!fileList.value.length) {
-    message.info('请选择文件');
+    message.info(INFO_NO_FILE);
     return;
   }
   handleCrop();
@@ -201,7 +208,7 @@ onUnmounted(() => {
       >
         <n-button>选择文件</n-button>
       </n-upload>
-      <n-button class="upload-btn" @click="handleUploadPDF">
+      <n-button type="primary" ghost class="upload-btn" @click="handleUploadPDF">
         开始转换
       </n-button>
       <n-scrollbar x-scrollable>
@@ -235,7 +242,7 @@ onUnmounted(() => {
           <n-button :disabled="cameras.length == 0"> 切换摄像头 </n-button>
         </n-popselect>
         <n-select v-model:value="mode" :options="options" />
-        <n-button type="primary" @click="handleCompare"> 开始检测 </n-button>
+        <n-button type="primary" ghost @click="handleCompare"> 开始检测 </n-button>
       </n-space>
       <!-- video区域 -->
       <n-space>

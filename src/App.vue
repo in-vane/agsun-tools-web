@@ -1,6 +1,5 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router';
-import { NIcon, NMessageProvider } from 'naive-ui';
+import { RouterView } from 'vue-router';
 </script>
 
 <template>

@@ -4,7 +4,12 @@ import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, SOCKET_URL } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
-import { CONST } from '@/utils';
+import {
+  SHARD_SIZE,
+  INFO_NO_FILE,
+  PDF2IMG_MODE,
+  WEBSOCKET_TYPE,
+} from '@/config/const.config';
 
 const message = useMessage();
 const upload = ref(null);
@@ -58,23 +63,27 @@ const openWebsocket = () => {
 const sendMessage = () => {
   const file = fileList.value[0].file;
   const size = file.size;
-  const shardSize = 1024 * 1024; // 以1MB为一个分片
-  const shardCount = Math.ceil(size / shardSize); // 总片数
-
-  for (let i = 0; i < shardCount; i++) {
-    const start = i * shardSize;
-    const end = Math.min(size, start + shardSize);
+  const total = Math.ceil(size / SHARD_SIZE);
+  const params = {
+    type: WEBSOCKET_TYPE.PDF2IMG,
+    fileName: file.name,
+    total,
+    options: {
+      mode: PDF2IMG_MODE.NORMAL,
+      end: 10,
+    },
+  };
+  for (let i = 0; i < total; i++) {
+    const start = i * SHARD_SIZE;
+    const end = Math.min(size, start + SHARD_SIZE);
     const fileClip = file.slice(start, end);
     const reader = new FileReader();
     reader.onload = (e) => {
-      const message = {
-        fileName: file.name,
+      Object.assign(params, {
         file: reader.result,
-        total: shardCount,
         current: i + 1,
-        options: { mode: CONST.MODE_PDF2IMG.MODE_NORMAL, limit: 10 },
-      };
-      ws.value.send(JSON.stringify(message));
+      });
+      ws.value.send(JSON.stringify(params));
     };
     reader.readAsDataURL(fileClip);
   }
@@ -89,7 +98,7 @@ const handleGetCrop = () => {
 
 const handleUpload = () => {
   if (!fileList.value.length) {
-    message.info('请选择文件');
+    message.info(INFO_NO_FILE);
     return;
   }
   openWebsocket();
@@ -201,7 +210,7 @@ onUnmounted(() => {
             </n-p>
           </n-upload-dragger>
         </n-upload>
-        <n-button type="primary" :ghost="true" @click="handleUpload">
+        <n-button type="primary" ghost @click="handleUpload">
           开始转换
         </n-button>
       </n-spin>
@@ -215,7 +224,7 @@ onUnmounted(() => {
           type="text"
           placeholder="请输入明细表的页码数"
         />
-        <n-button type="primary" :ghost="true" @click="handlePartCount">
+        <n-button type="primary" ghost @click="handlePartCount">
           开始任务
         </n-button>
       </n-space>
@@ -258,9 +267,9 @@ onUnmounted(() => {
     <!-- result -->
     <div>
       <n-h3 prefix="bar">3. 零件计数检测结果</n-h3>
-      <n-p v-show="response.table?.error_pages_no == 0">
+      <!-- <n-p v-show="response.table?.error_pages_no?.length == 0">
         各语言明细表与第一张相符
-      </n-p>
+      </n-p> -->
       <n-data-table
         size="small"
         :bordered="false"
