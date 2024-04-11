@@ -10,8 +10,12 @@ const upload = ref(null);
 
 const fileList = ref([]);
 const response = ref({
-  error: false,
-  result: [],
+  code: null,
+  data: {
+    mismatch_dict: [],
+    match_dict: [],
+  },
+  msg: '',
 });
 const loading = ref(false);
 
@@ -27,7 +31,17 @@ const handleUpload = () => {
     .post('/screw', { body: formData })
     .then((res) => {
       console.log(res);
-      response.value = res.json;
+      const { code, data, msg } = res.json;
+      const mismatch = Array.isArray(data.mismatch_dict)
+        ? data.mismatch_dict
+        : [];
+      const match = Array.isArray(data.match_dict) ? data.match_dict : [];
+      const list = mismatch.concat(match);
+      response.value = {
+        code,
+        data: { result: list },
+        msg,
+      };
     })
     .catch((err) => {})
     .finally(() => {
@@ -86,7 +100,7 @@ const renderRowClass = (rowData) =>
       <n-data-table
         size="small"
         :columns="columns"
-        :data="response.result"
+        :data="response.data?.result"
         :bordered="false"
         :row-class-name="renderRowClass"
       />

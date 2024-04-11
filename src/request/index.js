@@ -2,7 +2,9 @@ import { createLyla } from '@lylajs/web';
 import { storage } from '@/utils/storage';
 import { useUser } from '@/store/modules/user';
 
-const HOST = '10.22.148.91'
+
+
+const HOST = '10.22.148.91';
 const PORT = 8889;
 // const HOST = '10.22.148.82'
 // const PORT = 6108;
@@ -26,16 +28,25 @@ const { lyla } = createLyla({
     ],
     onResponseError: [
       (error, reject) => {
+        const $message = window['$message'];
         const userStore = useUser();
         const { response } = error;
         const { status, statusText } = response;
         console.log({ status, statusText });
-        if (status == 401) {
-          userStore.logout();
-          location.href = '/login';
+        switch (status) {
+          case 401:
+            userStore.logout();
+            location.href = '/login';
+            break;
+          case 403:
+            $message.error(`没有执行该任务的权限: ${statusText}`)
+            break;
+
+          default:
+            $message.error(`任务失败: ${statusText}`)
+            break;
         }
-        if (status == 403) {
-        }
+
         reject(statusText);
       },
     ],
