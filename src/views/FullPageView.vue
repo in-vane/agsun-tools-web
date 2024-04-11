@@ -9,6 +9,7 @@ import {
   INFO_NO_FILE,
   WEBSOCKET_TYPE,
 } from '@/config/const.config';
+import { onlyAllowNumber } from '@/utils';
 
 const message = useMessage();
 const upload = ref(null);
@@ -108,13 +109,18 @@ const handleCompare = () => {
     return;
   }
   loadingCompare.value = true;
-  const formData = new FormData();
-  formData.append('file_path_1', filePath.value[0]);
-  formData.append('file_path_2', filePath.value[1]);
-  formData.append('start_1', start.value[0]);
-  formData.append('start_2', start.value[1]);
+  const params = {
+    file_path_1: filePath.value[0],
+    file_path_2: filePath.value[1],
+    start_1: start.value[0] || -1,
+    start_2: start.value[1] || -1,
+  };
+  if (!active.value) {
+    params.start_1 = -1;
+    params.start_2 = -1;
+  }
   lyla
-    .post('/fullPage', { body: formData })
+    .post('/fullPage', { json: params })
     .then((res) => {
       console.log(res);
       response.value = res.json;
@@ -173,6 +179,7 @@ const handleCompare = () => {
             <n-input
               :disabled="!active"
               v-model:value="start[0]"
+              :allow-input="onlyAllowNumber"
               autosize
               placeholder="起始"
             />
@@ -183,6 +190,7 @@ const handleCompare = () => {
             <n-input
               :disabled="!active"
               v-model:value="start[1]"
+              :allow-input="onlyAllowNumber"
               autosize
               placeholder="起始"
             />
