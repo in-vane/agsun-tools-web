@@ -31,19 +31,14 @@ export const asyncRoutes = [
         component: () => import('@/views/CEView.vue'),
       },
       {
-        path: '/explore',
-        name: 'explore',
-        component: () => import('@/views/ExploreView.vue'),
+        path: '/area',
+        name: 'area',
+        component: () => import('@/views/AreaView.vue'),
       },
       {
         path: '/fullPage',
         name: 'fullPage',
         component: () => import('@/views/FullPageView.vue'),
-      },
-      {
-        path: '/fullPageImage',
-        name: 'fullPageImage',
-        component: () => import('@/views/FullPageImageView.vue'),
       },
       {
         path: '/count',

@@ -28,18 +28,13 @@ const renderLabel = (path, label) => () =>
 const menuOptions = [
   { label: renderLabel('/home', '首页'), key: 'home', icon: renderIcon(IHome) },
   {
-    label: renderLabel('/explore', '图例对比'),
-    key: 'explore',
+    label: renderLabel('/area', '区域对比'),
+    key: 'area',
     icon: renderIcon(ISpark),
   },
   {
     label: renderLabel('/fullPage', '整页对比'),
     key: 'fullPage',
-    icon: renderIcon(IDoc),
-  },
-  {
-    label: renderLabel('/fullPageImage', '整页对比框选模式'),
-    key: 'fullPageImage',
     icon: renderIcon(IDoc),
   },
   {
