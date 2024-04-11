@@ -40,6 +40,7 @@ const openWebsocket = () => {
 
   websocket.onopen = (e) => {
     console.log('connected: ', e);
+    filePath.value = ['', ''];
     sendMessage(0);
     sendMessage(1);
   };
