@@ -22,9 +22,9 @@ const limit = ref([
   { start: '', end: '' },
   { start: '', end: '' },
 ]);
-const images = ref([[], []]);
 const progress = ref(['', '']);
 const current = ref([0, 0]);
+const images = ref([[], []]);
 const cropend = ref([]);
 const response = ref({ result: '' });
 
@@ -38,14 +38,23 @@ const isLimitError = (i) => {
   const params = limit.value[i];
   let start = parseInt(params.start);
   let end = parseInt(params.end);
-  Number.isNaN(start) && (start = 0);
-  Number.isNaN(end) && (end = 0);
+  if (Number.isNaN(start) || Number.isNaN(end)) {
+    message.error('请正确填写起止页');
+    return true;
+  }
   if (end < start) {
     message.error('起始页不能大于结束页');
     return true;
   }
 
   return false;
+};
+
+const reset = () => {
+  completed.value = [false, false];
+  progress.value = ['', ''];
+  current.value = [0, 0];
+  images.value = [[], []];
 };
 
 const openWebsocket = () => {
@@ -61,6 +70,7 @@ const openWebsocket = () => {
       }
     }
     loadingUpload.value = true;
+    reset();
     sendMessage(0);
     sendMessage(1);
   };
@@ -289,6 +299,7 @@ onUnmounted(() => {
                   :src="img"
                   alt="image"
                   height="200px"
+                  preview-disabled
                   @click="(e) => handlePreviewClick(0, i)"
                 />
               </div>
@@ -315,6 +326,7 @@ onUnmounted(() => {
                   :src="img"
                   alt="image"
                   height="200px"
+                  preview-disabled
                   @click="(e) => handlePreviewClick(1, i)"
                 />
               </div>
