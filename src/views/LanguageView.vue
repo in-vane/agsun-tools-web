@@ -10,7 +10,7 @@ const upload = ref(null);
 const message = useMessage();
 
 const fileList = ref([]);
-const limit = ref('');
+const limit = ref(15);
 const response = ref({ code: -1, data: {}, msg: '' });
 
 const loading = ref(false);
@@ -21,7 +21,7 @@ const handleUpload = () => {
     return;
   }
   let n = parseInt(limit.value);
-  Number.isNaN(n) && (n = 0);
+  Number.isNaN(n) && (n = 15);
   loading.value = true;
   const formData = new FormData();
   formData.append('file', fileList.value[0].file);
@@ -81,7 +81,7 @@ const columns = [
             v-model:value="limit"
             :allow-input="onlyAllowNumber"
             autosize
-            placeholder="所有"
+            placeholder="15"
           />
           <n-input-group-label>页以检索目录</n-input-group-label>
         </n-input-group>
