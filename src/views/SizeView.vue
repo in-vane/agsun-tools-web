@@ -10,7 +10,11 @@ const message = useMessage();
 
 const fileList = ref([]);
 const size = ref({ width: '', height: '' });
-const response = ref({ error: false, error_msg: '', result: '' });
+const response = ref({
+  error: false,
+  error_msg: '',
+  result: '',
+});
 
 const loading = ref(false);
 

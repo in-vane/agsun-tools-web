@@ -10,7 +10,7 @@ const upload = ref(null);
 
 const fileList = ref([]);
 const response = ref({
-  code: 0,
+  code: null,
   data: {
     error: false,
     error_page: [],
@@ -45,7 +45,7 @@ const handleUpload = () => {
 <template>
   <n-space vertical>
     <n-spin :show="loading">
-      <n-h3 prefix="bar">选择要检查的PDF文件</n-h3>
+      <n-h3 prefix="bar">1. 选择要检查的PDF文件</n-h3>
       <n-upload
         ref="upload"
         :max="1"
@@ -69,17 +69,21 @@ const handleUpload = () => {
       </n-upload>
       <n-button type="primary" ghost @click="handleUpload"> 开始检查 </n-button>
     </n-spin>
-    <div v-show="response.data?.error">
-      <n-h3 prefix="bar">页码错误的页面</n-h3>
+    <div v-show="response.code != null">
+      <n-h3
+        prefix="bar"
+        :class="`n-h3-${response.data?.error ? 'error' : 'success'}`"
+        :type="response.data?.error ? 'error' : 'success'"
+      >
+        2. 检测结果: {{ response.data?.error ? '页码有误' : '页码无误' }}
+      </n-h3>
       <n-image-group>
         <n-space>
-          <n-image
-            v-for="(img, i) in response.data?.result"
-            :key="i"
-            :src="img"
-            alt="image"
-            height="200px"
-          />
+          <div v-for="(img, i) in response.data?.result" :key="i">
+            <n-badge :value="response.data?.error_page[i]">
+              <n-image :src="img" alt="image" height="200px" />
+            </n-badge>
+          </div>
         </n-space>
       </n-image-group>
     </div>
@@ -90,11 +94,26 @@ const handleUpload = () => {
 .n-space {
   gap: 24px 12px !important;
 }
-.n-h3 {
-  margin-bottom: 8px;
-}
 .n-image {
   border: solid 1px rgb(224, 224, 230);
   border-radius: 3px;
+}
+.n-h3 {
+  margin-bottom: 8px;
+}
+.n-h3-success::after,
+.n-h3-error::after {
+  content: ' ';
+  width: calc(100% - 8px);
+  height: 100%;
+  position: absolute;
+  left: 8px;
+  border-radius: 3px;
+}
+.n-h3-success::after {
+  background: rgba(24, 160, 88, 0.2);
+}
+.n-h3-error::after {
+  background: rgba(208, 48, 80, 0.2);
 }
 </style>

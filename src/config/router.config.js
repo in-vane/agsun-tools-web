@@ -41,6 +41,11 @@ export const asyncRoutes = [
         component: () => import('@/views/FullPageView.vue'),
       },
       {
+        path: '/fullPageImage',
+        name: 'fullPageImage',
+        component: () => import('@/views/FullPageImageView.vue'),
+      },
+      {
         path: '/count',
         name: 'count',
         component: () => import('@/views/PartCountView.vue'),

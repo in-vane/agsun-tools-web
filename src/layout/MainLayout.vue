@@ -38,6 +38,11 @@ const menuOptions = [
     icon: renderIcon(IDoc),
   },
   {
+    label: renderLabel('/fullPageImage', '整页对比框选模式'),
+    key: 'fullPageImage',
+    icon: renderIcon(IDoc),
+  },
+  {
     label: renderLabel('/count', '零件计数'),
     key: 'count',
     icon: renderIcon(ICog),
