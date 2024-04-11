@@ -41,14 +41,14 @@ const handleValidateButtonClick = (e) => {
 
       const params = { username, password };
       try {
-        const { code } = await userStore.login(params);
+        const response = await userStore.login(params);
         message.destroyAll();
-        if (code == 200) {
+        if (response.code === 0) {
           const toPath = decodeURIComponent(route.query?.redirect || '/');
           message.success('登录成功，即将进入系统');
           router.replace(toPath);
         } else {
-          message.info(msg || '登录失败');
+          message.info(response.message || '登录失败');
         }
       } finally {
         loading.value = false;
@@ -120,4 +120,3 @@ const handleValidateButtonClick = (e) => {
   text-align: center;
 }
 </style>
-@/store/modules/user

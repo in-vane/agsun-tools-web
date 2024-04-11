@@ -7,7 +7,6 @@ import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import {
   SHARD_SIZE,
   PDF2IMG_MODE,
-  MESSAGE_ERROR_PARAMS,
   WEBSOCKET_TYPE,
 } from '@/config/const.config';
 import { onlyAllowNumber } from '@/utils';

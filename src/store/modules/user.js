@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { store } from '@/store';
 import { storage } from '@/utils/storage';
+import { lyla } from '@/request';
 
 export const CURRENT_USER = 'CURRENT-USER';
 export const ACCESS_TOKEN = 'ACCESS-TOKEN';
@@ -39,22 +40,19 @@ export const useUserStore = defineStore({
     },
     // 登录
     async login(params) {
-      // const response = await login(params);
-      const response = {
-        result: {
-          token: 'HQWHXPBPLGYNRZLGYXEQYNCJBSXSHCIH',
-        },
-        code: 200,
+      const response = await lyla.post('/login', { json: params });
+      const { json } = response;
+      const { code, data, message } = json;
+      const userinfo = {
+        username: params.username,
       };
-      const { result, code } = response;
-      if (code === 200) {
-        const ex = 7 * 24 * 60 * 60;
-        storage.set(ACCESS_TOKEN, result.token, ex);
-        storage.set(CURRENT_USER, result, ex);
-        this.setToken(result.token);
-        this.setUserInfo(result);
+      if (code === 0) {
+        storage.set(CURRENT_USER, userinfo);
+        this.setUserInfo(userinfo);
+        storage.set(ACCESS_TOKEN, data.access_token);
+        this.setToken(data.access_token);
       }
-      return response;
+      return json;
     },
     // 获取用户信息
     async getInfo() {
