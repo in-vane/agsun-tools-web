@@ -4,6 +4,7 @@ import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla } from '@/request';
 import { INFO_NO_FILE } from '@/config/const.config';
+import { onlyAllowNumber } from '@/utils';
 
 const message = useMessage();
 const upload = ref(null);
@@ -12,9 +13,10 @@ const fileList = ref([]);
 const response = ref({ result: '' });
 
 const mode = ref(0);
+const sheet = ref(1);
 const options = [
   { label: '常规模式', value: 0 },
-  { label: '丹麦模式', value: 1 },
+  { label: '丹麦模式', value: 1, disabled: true },
 ];
 
 const loading = ref(false);
@@ -24,6 +26,8 @@ const handleUpload = () => {
     message.info(INFO_NO_FILE);
     return;
   }
+  let n = parseInt(sheet.value);
+  Number.isNaN(n) && (n = 1);
   loading.value = true;
   const formData = new FormData();
   for (const item of fileList.value) {
@@ -70,8 +74,20 @@ const handleUpload = () => {
       <n-space vertical>
         <n-space>
           <n-select v-model:value="mode" :options="options" />
-          <n-input type="text" placeholder="Sheet表" />
-          <n-button type="primary" ghost @click="handleUpload"> 开始对比 </n-button>
+          <n-input-group>
+            <n-input-group-label>第</n-input-group-label>
+            <n-input
+              type="text"
+              placeholder="1"
+              v-model:value="sheet"
+              :allow-input="onlyAllowNumber"
+              autosize
+            />
+            <n-input-group-label>张Sheet表</n-input-group-label>
+          </n-input-group>
+          <n-button type="primary" ghost @click="handleUpload">
+            开始对比
+          </n-button>
         </n-space>
       </n-space>
     </n-spin>
@@ -89,5 +105,8 @@ const handleUpload = () => {
 <style scoped>
 .n-select {
   width: 200px;
+}
+.n-input {
+  min-width: 80px;
 }
 </style>
