@@ -34,6 +34,7 @@ const handleUpload = () => {
     formData.append(item.file.name, item.file);
   }
   formData.append('mode', mode.value);
+  formData.append('sheet', sheet.value);
   lyla
     .post('/ce', { body: formData })
     .then((res) => {
