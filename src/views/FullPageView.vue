@@ -136,7 +136,7 @@ const handleCompare = () => {
     <!-- upload -->
     <div>
       <n-spin :show="loadingUpload">
-        <n-h3 prefix="bar">1. 上传PDF</n-h3>
+        <n-h3 prefix="bar">1. 文档对比(文字模式), 请选择文件上传</n-h3>
         <n-upload
           multiple
           ref="upload"
