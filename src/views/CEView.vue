@@ -10,10 +10,16 @@ const message = useMessage();
 const upload = ref(null);
 
 const fileList = ref([]);
-const response = ref({ result: '' });
+const response = ref({
+  code: null,
+  data: {
+    image_base64: '',
+  },
+  msg: '',
+});
 
 const mode = ref(0);
-const sheet = ref(1);
+const sheet = ref('1');
 const options = [
   { label: '常规模式', value: 0 },
   { label: '丹麦模式', value: 1, disabled: true },
@@ -34,7 +40,7 @@ const handleUpload = () => {
     formData.append(item.file.name, item.file);
   }
   formData.append('mode', mode.value);
-  formData.append('sheet', sheet.value);
+  formData.append('sheet', n);
   lyla
     .post('/ce', { body: formData })
     .then((res) => {
@@ -95,8 +101,8 @@ const handleUpload = () => {
     <n-divider />
     <n-h3 prefix="bar">2. 检测结果</n-h3>
     <n-image
-      v-show="response.result"
-      :src="response.result"
+      v-show="response.data?.image_base64"
+      :src="response.data?.image_base64"
       alt="image"
       width="100%"
     />
@@ -108,6 +114,6 @@ const handleUpload = () => {
   width: 200px;
 }
 .n-input {
-  min-width: 80px;
+  min-width: 56px;
 }
 </style>
