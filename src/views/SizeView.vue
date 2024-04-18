@@ -4,16 +4,21 @@ import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla } from '@/request';
 import { INFO_NO_FILE } from '@/config/const.config.js';
+import { onlyAllowNumber } from '@/utils';
 
 const upload = ref(null);
 const message = useMessage();
 
 const fileList = ref([]);
+const active = ref(false);
 const size = ref({ width: '', height: '' });
 const response = ref({
-  error: false,
-  error_msg: '',
-  result: '',
+  code: null,
+  data: {
+    error: false,
+    img_base64: '',
+  },
+  msg: '',
 });
 
 const loading = ref(false);
@@ -26,6 +31,10 @@ const handleUpload = () => {
   loading.value = true;
   const formData = new FormData();
   formData.append('file', fileList.value[0].file);
+  if (active.value) {
+    formData.append('width', size.value.width || -1);
+    formData.append('height', size.value.height || -1);
+  }
   lyla
     .post('/size', { body: formData })
     .then((res) => {
@@ -65,10 +74,24 @@ const handleUpload = () => {
           </n-upload-dragger>
         </n-upload>
         <n-space>
+          <n-switch v-model:value="active" size="large">
+            <template #checked> 指定 </template>
+            <template #unchecked> 指定 </template>
+          </n-switch>
           <n-input-group>
             <n-input-group-label>手动输入</n-input-group-label>
-            <n-input v-model:value="size.width" autosize placeholder="宽" />
-            <n-input v-model:value="size.height" autosize placeholder="高" />
+            <n-input
+              autosize
+              placeholder="宽"
+              v-model:value="size.width"
+              :allow-input="onlyAllowNumber"
+            />
+            <n-input
+              autosize
+              placeholder="高"
+              v-model:value="size.height"
+              :allow-input="onlyAllowNumber"
+            />
           </n-input-group>
           <n-button type="primary" ghost @click="handleUpload">
             开始检查
@@ -76,15 +99,15 @@ const handleUpload = () => {
         </n-space>
       </n-spin>
     </div>
-    <div v-show="response.result">
+    <div v-show="response.data?.img_base64">
       <n-h3
         prefix="bar"
-        :class="`n-h3-${response.error ? 'error' : 'success'}`"
-        :type="response.error ? 'error' : 'success'"
+        :class="`n-h3-${response.data?.error ? 'error' : 'success'}`"
+        :type="response.data?.error ? 'error' : 'success'"
       >
-        2. 检测结果: {{ response.error_msg }}
+        2. 检测结果: {{ response.msg }}
       </n-h3>
-      <n-image :src="response.result" alt="image" height="400px" />
+      <n-image :src="response.data?.img_base64" alt="image" height="400px" />
     </div>
   </n-space>
 </template>
