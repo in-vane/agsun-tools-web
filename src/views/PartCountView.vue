@@ -72,7 +72,7 @@ const sendMessage = () => {
     total,
     options: {
       mode: PDF2IMG_MODE.NORMAL,
-      end: 10,
+      // end: 10,
     },
   };
   for (let i = 0; i < total; i++) {
