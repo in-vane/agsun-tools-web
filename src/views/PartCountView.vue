@@ -35,12 +35,19 @@ const response = ref({
 const loadingUpload = ref(false);
 const loadingPartCount = ref(false);
 
+const reset = () => {
+  current.value = 0;
+  images.value = [];
+  cropend.value = '';
+};
+
 const openWebsocket = () => {
   loadingUpload.value = true;
   const websocket = new WebSocket(SOCKET_URL);
 
   websocket.onopen = (e) => {
     console.log('connected: ', e);
+    reset();
     sendMessage();
   };
   websocket.onclose = (e) => {
