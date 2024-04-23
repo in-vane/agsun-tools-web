@@ -1,14 +1,34 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, h } from 'vue';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
-import { useMessage } from 'naive-ui';
-import { lyla } from '@/request';
-import { INFO_NO_FILE } from '@/config/const.config';
+import { useMessage, NInput } from 'naive-ui';
+import { lyla, SOCKET_URL } from '@/request';
+import {
+  SHARD_SIZE,
+  INFO_NO_FILE,
+  PDF2IMG_MODE,
+  WEBSOCKET_TYPE,
+} from '@/config/const.config';
+import VuePictureCropper, { cropper } from 'vue-picture-cropper';
+import { onlyAllowNumber } from '@/utils';
 
 const message = useMessage();
 const upload = ref(null);
+const ws = ref(null);
 
 const fileList = ref([]);
+const images = ref([]);
+const current = ref(0);
+const cropend = ref('');
+const overview = ref([
+  { key: 0, type: 'A', count: '8' },
+  { key: 1, type: 'B', count: '9' },
+  { key: 2, type: 'C', count: '10' },
+  { key: 3, type: 'D', count: '7' },
+  { key: 4, type: 'E', count: '12' },
+  { key: 5, type: 'F', count: '6' },
+]);
+const limit = ref({ start: '', end: '' });
 const response = ref({
   code: null,
   data: {
@@ -17,35 +37,125 @@ const response = ref({
   },
   msg: '',
 });
-const loading = ref(false);
+const loadingUpload = ref(false);
+const loadingOCR = ref(false);
+const loadingRes = ref(false);
 
-const handleUpload = () => {
-  if (!fileList.value.length) {
-    message.info(INFO_NO_FILE);
-    return;
+const reset = () => {
+  current.value = 0;
+  images.value = [];
+  cropend.value = '';
+};
+
+const openWebsocket = () => {
+  loadingUpload.value = true;
+  const websocket = new WebSocket(SOCKET_URL);
+
+  websocket.onopen = (e) => {
+    console.log('connected: ', e);
+    reset();
+    sendMessage();
+  };
+  websocket.onclose = (e) => {
+    console.log('disconnected: ', e);
+    loadingUpload.value = false;
+  };
+  websocket.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    const { img_base64, total, current } = data;
+    if (img_base64) {
+      images.value.push({ src: img_base64, page: current });
+      current == total && ws.value.close();
+    }
+  };
+  websocket.onerror = (e) => {
+    console.log('error: ', e);
+  };
+
+  ws.value = websocket;
+};
+
+const sendMessage = () => {
+  const file = fileList.value[0].file;
+  const size = file.size;
+  const total = Math.ceil(size / SHARD_SIZE);
+  const params = {
+    type: WEBSOCKET_TYPE.PDF2IMG,
+    fileName: file.name,
+    total,
+    options: { mode: PDF2IMG_MODE.NORMAL },
+  };
+  for (let i = 0; i < total; i++) {
+    const start = i * SHARD_SIZE;
+    const end = Math.min(size, start + SHARD_SIZE);
+    const fileClip = file.slice(start, end);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      Object.assign(params, {
+        file: reader.result,
+        current: i + 1,
+      });
+      ws.value.send(JSON.stringify(params));
+    };
+    reader.readAsDataURL(fileClip);
   }
-  loading.value = true;
-  const formData = new FormData();
-  formData.append('file', fileList.value[0].file);
+};
+
+const handleOCR = () => {
+  loadingOCR.value = true;
+  const params = { crop: cropend.value };
   lyla
-    .post('/screw', { body: formData })
+    .post('/screw/bags', { json: params })
     .then((res) => {
       console.log(res);
-      const { code, data, msg } = res.json;
-      const mismatch = Array.isArray(data.mismatch_dict)
-        ? data.mismatch_dict
-        : [];
-      const match = Array.isArray(data.match_dict) ? data.match_dict : [];
-      const list = mismatch.concat(match);
-      response.value = {
-        code,
-        data: { result: list },
-        msg,
-      };
+      response.value = res.json;
     })
     .catch((err) => {})
     .finally(() => {
-      loading.value = false;
+      loadingOCR.value = false;
+    });
+};
+
+const handleGetCrop = () => {
+  const base64 = cropper.getDataURL();
+  cropend.value = base64;
+};
+
+const isLimitError = () => {
+  let start = parseInt(limit.value.start);
+  let end = parseInt(limit.value.end);
+  if (Number.isNaN(start) || Number.isNaN(end)) {
+    message.error('请正确填写起止页');
+    return true;
+  }
+  if (end < start) {
+    message.error('起始页不能大于结束页');
+    return true;
+  }
+
+  return false;
+};
+
+const handleCheck = () => {
+  const isError = isLimitError();
+  if (isError) {
+    return;
+  }
+  loadingRes.value = true;
+  const params = {
+    table: overview.value,
+    start: limit.start,
+    end: limit.end,
+  };
+  lyla
+    .post('/screw', { json: params })
+    .then((res) => {
+      console.log(res);
+      response.value = res.json;
+    })
+    .catch((err) => {})
+    .finally(() => {
+      loadingRes.value = false;
     });
 };
 
@@ -66,11 +176,51 @@ const columns = [
 ];
 const renderRowClass = (rowData) =>
   rowData.total == rowData.step_total ? '' : 'row-error';
+const boxStyle = {
+  height: '400px',
+  width: '100%',
+  border: '1px dashed rgb(224, 224, 230)',
+  borderRadius: '3px',
+  margin: '8px 0',
+};
+const options = {
+  viewMode: 1,
+  dragMode: 'move',
+  autoCrop: true,
+  cropend: handleGetCrop,
+};
+const OCRColumns = [
+  {
+    title: '螺丝类别',
+    key: 'type',
+    render(row, index) {
+      return h(NInput, {
+        value: row.type,
+        onUpdateValue(v) {
+          overview.value[index].type = v;
+        },
+      });
+    },
+  },
+  {
+    title: '总数量',
+    key: 'count',
+    render(row, index) {
+      return h(NInput, {
+        value: row.count,
+        onUpdateValue(v) {
+          overview.value[index].count = v;
+        },
+      });
+    },
+  },
+];
 </script>
 
 <template>
   <n-space vertical>
-    <n-spin :show="loading">
+    <!-- upload -->
+    <n-spin :show="loadingUpload">
       <n-h3 prefix="bar">1. 上传PDF</n-h3>
       <n-upload
         ref="upload"
@@ -93,10 +243,80 @@ const renderRowClass = (rowData) =>
           </n-p>
         </n-upload-dragger>
       </n-upload>
-      <n-button type="primary" ghost @click="handleUpload"> 开始检查 </n-button>
+      <n-button type="primary" ghost @click="openWebsocket">
+        开始转换
+      </n-button>
     </n-spin>
+    <!-- crop table -->
+    <n-spin :show="loadingOCR">
+      <n-h3 prefix="bar">2. 选取螺丝表</n-h3>
+      <div class="scroll-box">
+        <n-scrollbar class="n-scrollbar" x-scrollable>
+          <div class="preview-box">
+            <div class="preview-item" v-for="(img, i) in images" :key="i">
+              <n-badge
+                :value="i + 1"
+                :color="current == i ? '#18a058' : 'gray'"
+                :offset="[-10, 10]"
+              >
+                <n-image
+                  :src="img.src"
+                  alt="image"
+                  height="200px"
+                  preview-disabled
+                  @click="() => (current = i)"
+                />
+              </n-badge>
+            </div>
+          </div>
+        </n-scrollbar>
+        <div class="preview-crop">
+          <n-image
+            v-show="cropend"
+            :src="cropend"
+            height="120px"
+            width="100%"
+            alt="image"
+          />
+        </div>
+      </div>
+      <vue-picture-cropper
+        :boxStyle="boxStyle"
+        :img="images[current]?.src"
+        :options="options"
+      />
+      <n-button type="primary" ghost @click="handleOCR"> 识别螺丝包 </n-button>
+    </n-spin>
+
+    <n-spin :show="loadingRes">
+      <n-h3 prefix="bar">3. 检查</n-h3>
+      <n-space>
+        <n-data-table :columns="OCRColumns" :data="overview" />
+        <n-input-group>
+          <n-input-group-label>步骤图从</n-input-group-label>
+          <n-input
+            v-model:value="limit.start"
+            :allow-input="onlyAllowNumber"
+            autosize
+            placeholder="起始"
+          />
+          <n-input-group-label>页到</n-input-group-label>
+          <n-input
+            v-model:value="limit.end"
+            :allow-input="onlyAllowNumber"
+            autosize
+            placeholder="结束"
+          />
+          <n-input-group-label>页结束</n-input-group-label>
+        </n-input-group>
+        <n-button type="primary" ghost @click="handleCheck">
+          开始检测
+        </n-button>
+      </n-space>
+    </n-spin>
+    <!-- result -->
     <div>
-      <n-h3 prefix="bar">2. 零件计数检测结果</n-h3>
+      <n-h3 prefix="bar">4. 检测结果</n-h3>
       <n-data-table
         size="small"
         :columns="columns"
@@ -118,5 +338,35 @@ const renderRowClass = (rowData) =>
 :deep(.row-error td) {
   color: rgb(208, 48, 80);
   background: rgba(208, 48, 80, 0.2);
+}
+.n-image {
+  border-radius: 3px;
+  border: 1px dashed rgb(224, 224, 230);
+}
+.scroll-box {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.n-scrollbar {
+  flex: 1;
+}
+.preview-box {
+  display: flex;
+  gap: 12px;
+  min-height: 200px;
+  border-radius: 3px;
+  border: 1px dashed rgb(224, 224, 230);
+  border-radius: 3px;
+}
+.preview-crop {
+  border: 1px dashed rgb(224, 224, 230);
+  border-radius: 3px;
+  /* background: rgb(250, 250, 252); */
+  min-width: 150px;
+  min-height: 200px;
+}
+.n-input {
+  min-width: 80px;
 }
 </style>

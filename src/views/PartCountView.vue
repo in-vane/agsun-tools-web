@@ -77,10 +77,7 @@ const sendMessage = () => {
     type: WEBSOCKET_TYPE.PDF2IMG,
     fileName: file.name,
     total,
-    options: {
-      mode: PDF2IMG_MODE.NORMAL,
-      // end: 10,
-    },
+    options: { mode: PDF2IMG_MODE.NORMAL },
   };
   for (let i = 0; i < total; i++) {
     const start = i * SHARD_SIZE;
