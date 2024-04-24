@@ -20,6 +20,7 @@ const filePath = ref('');
 const images = ref([]);
 const current = ref(0);
 const cropend = ref('');
+const rect = ref([]);
 const overview = ref([]);
 const limit = ref({ start: '', end: '' });
 const response = ref({
@@ -38,6 +39,7 @@ const reset = () => {
   images.value = [];
   cropend.value = '';
   filePath.value = '';
+  rect.value = [];
 };
 
 const openWebsocket = () => {
@@ -96,8 +98,12 @@ const sendMessage = () => {
 };
 
 const handleOCR = () => {
+  if (!rect.value.length) {
+    message.error('请选择螺丝包区域');
+    return;
+  }
   loadingOCR.value = true;
-  const params = { crop: cropend.value };
+  const params = { rect: rect.value };
   lyla
     .post('/screw/bags', { json: params })
     .then((res) => {
@@ -112,6 +118,8 @@ const handleOCR = () => {
 
 const handleGetCrop = () => {
   const base64 = cropper.getDataURL();
+  const data = cropper.getData(true);
+  rect.value = [data.x, data.y, data.width, data.height];
   cropend.value = base64;
 };
 
