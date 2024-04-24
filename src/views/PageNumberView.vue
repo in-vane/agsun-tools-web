@@ -13,8 +13,10 @@ import {
 
 const message = useMessage();
 const upload = ref(null);
+const ws = ref(null);
 
 const fileList = ref([]);
+const filePath = ref('');
 const images = ref([]);
 const current = ref(0);
 const cropend = ref('');
@@ -52,11 +54,12 @@ const openWebsocket = () => {
   };
   websocket.onmessage = (e) => {
     const data = JSON.parse(e.data);
-    const { img_base64, total, current } = data;
+    const { img_base64, total, current, file_path} = data;
     if (img_base64) {
       images.value.push({ src: img_base64, page: current });
       current == total && ws.value.close();
     }
+    filePath.value = file_path;
   };
   websocket.onerror = (e) => {
     console.log('error: ', e);
@@ -104,9 +107,10 @@ const sendRect = () => {
     message.error('请拉取页码范围高度');
     return;
   }
-  loading.value = true;
+  loadingResult.value = true;
   const params = {
     rect: rect.value,
+    file_path: filePath.value,
   };
   lyla
     .post('/pageNumber', { json: params })
@@ -116,7 +120,7 @@ const sendRect = () => {
     })
     .catch((err) => {})
     .finally(() => {
-      loading.value = false;
+      loadingResult.value = false;
     });
 };
 

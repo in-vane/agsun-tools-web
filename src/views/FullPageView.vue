@@ -71,7 +71,7 @@ const sendMessage = (index) => {
   const size = file.size;
   const total = Math.ceil(size / SHARD_SIZE);
   const params = {
-    type: WEBSOCKET_TYPE.COMPARE,
+    type: WEBSOCKET_TYPE.UPLOAD,
     fileName: file.name,
     total,
     options: {

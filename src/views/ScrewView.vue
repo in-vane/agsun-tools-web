@@ -5,7 +5,6 @@ import { useMessage, NInput } from 'naive-ui';
 import { lyla, SOCKET_URL } from '@/request';
 import {
   SHARD_SIZE,
-  INFO_NO_FILE,
   PDF2IMG_MODE,
   WEBSOCKET_TYPE,
 } from '@/config/const.config';
@@ -17,23 +16,16 @@ const upload = ref(null);
 const ws = ref(null);
 
 const fileList = ref([]);
+const filePath = ref('');
 const images = ref([]);
 const current = ref(0);
 const cropend = ref('');
-const overview = ref([
-  { key: 0, type: 'A', count: '8' },
-  { key: 1, type: 'B', count: '9' },
-  { key: 2, type: 'C', count: '10' },
-  { key: 3, type: 'D', count: '7' },
-  { key: 4, type: 'E', count: '12' },
-  { key: 5, type: 'F', count: '6' },
-]);
+const overview = ref([]);
 const limit = ref({ start: '', end: '' });
 const response = ref({
   code: null,
   data: {
-    mismatch_dict: [],
-    match_dict: [],
+    result: [],
   },
   msg: '',
 });
@@ -45,6 +37,7 @@ const reset = () => {
   current.value = 0;
   images.value = [];
   cropend.value = '';
+  filePath.value = '';
 };
 
 const openWebsocket = () => {
@@ -62,11 +55,12 @@ const openWebsocket = () => {
   };
   websocket.onmessage = (e) => {
     const data = JSON.parse(e.data);
-    const { img_base64, total, current } = data;
+    const { img_base64, total, current, file_path } = data;
     if (img_base64) {
       images.value.push({ src: img_base64, page: current });
       current == total && ws.value.close();
     }
+    filePath.value = file_path;
   };
   websocket.onerror = (e) => {
     console.log('error: ', e);
@@ -108,7 +102,7 @@ const handleOCR = () => {
     .post('/screw/bags', { json: params })
     .then((res) => {
       console.log(res);
-      response.value = res.json;
+      overview.value = res.json.data.result;
     })
     .catch((err) => {})
     .finally(() => {
@@ -144,11 +138,12 @@ const handleCheck = () => {
   loadingRes.value = true;
   const params = {
     table: overview.value,
-    start: limit.start,
-    end: limit.end,
+    start: limit.value.start,
+    end: limit.value.end,
+    file_path: filePath.value,
   };
   lyla
-    .post('/screw', { json: params })
+    .post('/screw/compare', { json: params })
     .then((res) => {
       console.log(res);
       response.value = res.json;
@@ -174,8 +169,11 @@ const columns = [
     render: (_) => _.step_page_no.join(' / '),
   },
 ];
-const renderRowClass = (rowData) =>
-  rowData.total == rowData.step_total ? '' : 'row-error';
+
+const renderRowClass = (rowData) => {
+  return rowData.total == rowData.step_total ? '' : 'row-error';
+};
+
 const boxStyle = {
   height: '400px',
   width: '100%',
@@ -183,12 +181,14 @@ const boxStyle = {
   borderRadius: '3px',
   margin: '8px 0',
 };
+
 const options = {
   viewMode: 1,
   dragMode: 'move',
   autoCrop: true,
   cropend: handleGetCrop,
 };
+
 const OCRColumns = [
   {
     title: '螺丝类别',
