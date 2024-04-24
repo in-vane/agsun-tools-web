@@ -104,6 +104,7 @@ const handleOCR = () => {
   }
   loadingOCR.value = true;
   const params = {
+    file_path: filePath.value,
     page: current.value,
     rect: rect.value,
   };
