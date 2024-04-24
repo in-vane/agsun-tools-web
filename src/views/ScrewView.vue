@@ -103,7 +103,10 @@ const handleOCR = () => {
     return;
   }
   loadingOCR.value = true;
-  const params = { rect: rect.value };
+  const params = {
+    page: current.value,
+    rect: rect.value,
+  };
   lyla
     .post('/screw/bags', { json: params })
     .then((res) => {
