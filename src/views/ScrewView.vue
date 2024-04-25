@@ -316,11 +316,13 @@ const options = {
           />
         </div>
       </div>
-      <vue-picture-cropper
-        :boxStyle="CROP_BOX_STYLE"
-        :img="images[current]?.src"
-        :options="options"
-      />
+      <div class="crop-box">
+        <vue-picture-cropper
+          :boxStyle="CROP_BOX_STYLE"
+          :img="images[current]?.src"
+          :options="options"
+        />
+      </div>
       <n-button type="primary" ghost @click="handleOCR"> 识别螺丝包 </n-button>
     </n-spin>
 
@@ -405,7 +407,7 @@ const options = {
   border-radius: 3px;
 }
 .preview-crop {
-  border: 1px dashed rgb(224, 224, 230);
+  border: 1px dashed #18a058;
   border-radius: 3px;
   /* background: rgb(250, 250, 252); */
   min-width: 150px;
@@ -416,5 +418,8 @@ const options = {
 }
 .n-data-table {
   min-width: 400px;
+}
+.crop-box {
+  margin-top: 8px;
 }
 </style>

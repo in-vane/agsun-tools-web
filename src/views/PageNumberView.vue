@@ -9,7 +9,7 @@ import {
   INFO_NO_FILE,
   PDF2IMG_MODE,
   WEBSOCKET_TYPE,
-  CROP_BOX_STYLE
+  CROP_BOX_STYLE,
 } from '@/config/const.config';
 
 const message = useMessage();
@@ -55,7 +55,7 @@ const openWebsocket = () => {
   };
   websocket.onmessage = (e) => {
     const data = JSON.parse(e.data);
-    const { img_base64, total, current, file_path} = data;
+    const { img_base64, total, current, file_path } = data;
     if (img_base64) {
       images.value.push({ src: img_base64, page: current });
       current == total && ws.value.close();
@@ -202,11 +202,13 @@ const options = {
           />
         </div>
       </div>
-      <vue-picture-cropper
-        :boxStyle="CROP_BOX_STYLE"
-        :img="images[current]?.src"
-        :options="options"
-      />
+      <div class="crop-box">
+        <vue-picture-cropper
+          :boxStyle="CROP_BOX_STYLE"
+          :img="images[current]?.src"
+          :options="options"
+        />
+      </div>
     </n-spin>
     <!-- result -->
     <div v-show="response.code != null">
@@ -255,9 +257,8 @@ const options = {
   border-radius: 3px;
 }
 .preview-crop {
-  border: 1px dashed rgb(224, 224, 230);
+  border: 1px dashed #18a058;
   border-radius: 3px;
-  /* background: rgb(250, 250, 252); */
   min-width: 150px;
   min-height: 200px;
 }
@@ -278,5 +279,8 @@ const options = {
 }
 .n-h3-error::after {
   background: rgba(208, 48, 80, 0.2);
+}
+.crop-box {
+  margin-top: 8px;
 }
 </style>

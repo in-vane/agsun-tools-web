@@ -346,11 +346,13 @@ onUnmounted(() => {
             开始对比
           </n-button>
         </n-space>
-        <vue-picture-cropper
-          :boxStyle="CROP_BOX_STYLE"
-          :img="images[current[0]][current[1]]"
-          :options="options"
-        />
+        <div class="crop-box">
+          <vue-picture-cropper
+            :boxStyle="CROP_BOX_STYLE"
+            :img="images[current[0]][current[1]]"
+            :options="options"
+          />
+        </div>
       </div>
       <div class="box-divider-item">
         <n-spin :show="loadingCompare">
@@ -397,7 +399,7 @@ onUnmounted(() => {
   border-radius: 3px;
 }
 .preview-crop {
-  border: 1px dashed rgb(224, 224, 230);
+  border: 1px dashed #18a058;
   border-radius: 3px;
   min-width: 150px;
   min-height: 200px;
@@ -417,5 +419,8 @@ onUnmounted(() => {
 }
 .n-input {
   min-width: 80px;
+}
+.crop-box {
+  margin-top: 8px;
 }
 </style>

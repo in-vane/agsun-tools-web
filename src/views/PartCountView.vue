@@ -25,12 +25,12 @@ const fileList = ref([]);
 const images = ref([]);
 const current = ref(0);
 const pageTable = ref('1');
-const columnCount = ref('3');
+const columnCount = ref('6');
 const pairIndex = ref([
   {
     key: `${new Date().getTime()}`,
     index: '1',
-    count: '0',
+    count: '3',
   },
 ]);
 const cropend = ref('');
@@ -194,12 +194,11 @@ const addItem = () => {
   pairIndex.value.push({
     key: `${new Date().getTime()}`,
     index: '1',
-    count: '0',
+    count: '3',
   });
 };
 
 const removeItem = (key) => {
-  console.log(key);
   const i = pairIndex.value.findIndex((item) => item.key === key);
   if (i !== -1) {
     pairIndex.value.splice(i, 1);
@@ -289,7 +288,7 @@ onUnmounted(() => {
             :options="options"
           />
         </div>
-        <n-space vertical>
+        <n-space class="form-box" vertical>
           <n-input-group>
             <n-input-group-label>明细表在第</n-input-group-label>
             <n-input v-model:value="pageTable" :allow-input="num" type="text" />
@@ -319,8 +318,15 @@ onUnmounted(() => {
                 type="text"
               />
               <n-input-group-label>列的数值</n-input-group-label>
-              <n-button ghost @click="() => removeItem(item.key)">
-                删除
+              <n-button
+                v-if="pairIndex.length > 1"
+                quaternary
+                round
+                @click="() => removeItem(item.key)"
+              >
+                <n-icon>
+                  <trash-icon />
+                </n-icon>
               </n-button>
             </n-input-group>
           </div>
@@ -331,10 +337,10 @@ onUnmounted(() => {
               </n-icon>
             </template>
           </n-button>
-          <n-button type="primary" ghost @click="handlePartCount">
-            开始任务
-          </n-button>
         </n-space>
+        <n-button type="primary" ghost @click="handlePartCount">
+          开始任务
+        </n-button>
       </div>
     </n-spin>
     <!-- result -->
@@ -393,9 +399,8 @@ onUnmounted(() => {
   border-radius: 3px;
 }
 .preview-crop {
-  border: 1px dashed rgb(224, 224, 230);
+  border: 1px dashed #18a058;
   border-radius: 3px;
-  /* background: rgb(250, 250, 252); */
   min-width: 150px;
   min-height: 200px;
 }
@@ -406,8 +411,7 @@ onUnmounted(() => {
 .crop-box {
   width: 400px;
 }
-.n-input {
-  min-width: 40px;
-  width: 64px;
+.form-box {
+  width: 400px;
 }
 </style>
