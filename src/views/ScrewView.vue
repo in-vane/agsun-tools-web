@@ -1,14 +1,18 @@
 <script setup>
 import { ref, h } from 'vue';
-import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
-import { useMessage, NInput } from 'naive-ui';
+import { useMessage, NButton, NInput, NIcon } from 'naive-ui';
 import { lyla, SOCKET_URL } from '@/request';
+import VuePictureCropper, { cropper } from 'vue-picture-cropper';
+import {
+  ArchiveOutline as ArchiveIcon,
+  AddOutline as AddIcon,
+  TrashOutline as TrashIcon,
+} from '@vicons/ionicons5';
 import {
   SHARD_SIZE,
   PDF2IMG_MODE,
   WEBSOCKET_TYPE,
 } from '@/config/const.config';
-import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import { onlyAllowNumber } from '@/utils';
 
 const message = useMessage();
@@ -166,6 +170,7 @@ const handleCheck = () => {
     });
 };
 
+// table result
 const columns = [
   { title: '螺丝型号', key: 'type' },
   { title: '螺丝包总计数', key: 'total' },
@@ -186,19 +191,20 @@ const renderRowClass = (rowData) => {
   return rowData.total == rowData.step_total ? '' : 'row-error';
 };
 
-const boxStyle = {
-  height: '400px',
-  width: '100%',
-  border: '1px dashed rgb(224, 224, 230)',
-  borderRadius: '3px',
-  margin: '8px 0',
+// table type
+const addItem = () => {
+  overview.value.push({
+    key: `${new Date().getTime()}`,
+    type: 'new type',
+    count: '0',
+  });
 };
 
-const options = {
-  viewMode: 1,
-  dragMode: 'move',
-  autoCrop: true,
-  cropend: handleGetCrop,
+const removeItem = (row) => {
+  const i = overview.value.findIndex((item) => item.key === row.key);
+  if (i !== -1) {
+    overview.value.splice(i, 1);
+  }
 };
 
 const OCRColumns = [
@@ -226,7 +232,32 @@ const OCRColumns = [
       });
     },
   },
+  {
+    key: 'reduce',
+    render(row, index) {
+      return h(
+        NButton,
+        { onClick: () => removeItem(row) },
+        { icon: () => h(NIcon, null, { default: () => h(TrashIcon) }) }
+      );
+    },
+  },
 ];
+
+const boxStyle = {
+  height: '400px',
+  width: '100%',
+  border: '1px dashed rgb(224, 224, 230)',
+  borderRadius: '3px',
+  margin: '8px 0',
+};
+
+const options = {
+  viewMode: 1,
+  dragMode: 'move',
+  autoCrop: true,
+  cropend: handleGetCrop,
+};
 </script>
 
 <template>
@@ -303,7 +334,16 @@ const OCRColumns = [
     <n-spin :show="loadingRes">
       <n-h3 prefix="bar">3. 检查</n-h3>
       <n-space>
-        <n-data-table :columns="OCRColumns" :data="overview" />
+        <n-space vertical>
+          <n-data-table :columns="OCRColumns" :data="overview" />
+          <n-button block @click="addItem">
+            <template #icon>
+              <n-icon>
+                <add-icon />
+              </n-icon>
+            </template>
+          </n-button>
+        </n-space>
         <n-input-group>
           <n-input-group-label>步骤图从</n-input-group-label>
           <n-input
@@ -380,5 +420,8 @@ const OCRColumns = [
 }
 .n-input {
   min-width: 80px;
+}
+.n-data-table {
+  min-width: 400px;
 }
 </style>
