@@ -109,7 +109,7 @@ const sendMessage = (index) => {
     fileName: file.name,
     total,
     options: {
-      mode: PDF2IMG_MODE.VECTOR,
+      mode: PDF2IMG_MODE.NORMAL,
       index,
     },
   };
