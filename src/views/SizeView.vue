@@ -9,9 +9,16 @@ import { onlyAllowNumber } from '@/utils';
 const upload = ref(null);
 const message = useMessage();
 
+const MODE_RECT = 0;
+const MODE_CIR = 1;
+const OPTIONS = [
+  { label: '矩形模式', value: MODE_RECT },
+  { label: '圆形模式', value: MODE_CIR },
+];
 const fileList = ref([]);
+const mode = ref(MODE_RECT);
 const active = ref(false);
-const size = ref({ width: '', height: '' });
+const size = ref({ width: '', height: '', radius: '' });
 const response = ref({
   code: null,
   data: {
@@ -31,9 +38,12 @@ const handleUpload = () => {
   loading.value = true;
   const formData = new FormData();
   formData.append('file', fileList.value[0].file);
+  formData.append('mode', mode.value);
+  formData.append('active', active.value ? 1 : 0);
   if (active.value) {
     formData.append('width', size.value.width || -1);
     formData.append('height', size.value.height || -1);
+    formData.append('radius', size.value.radius || -1);
   }
   lyla
     .post('/size', { body: formData })
@@ -73,7 +83,8 @@ const handleUpload = () => {
             </n-p>
           </n-upload-dragger>
         </n-upload>
-        <n-space>
+        <n-space align="center">
+          <n-select v-model:value="mode" :options="OPTIONS" />
           <n-switch v-model:value="active" size="large">
             <template #checked> 指定 </template>
             <template #unchecked> 指定 </template>
@@ -81,15 +92,27 @@ const handleUpload = () => {
           <n-input-group>
             <n-input-group-label>手动输入</n-input-group-label>
             <n-input
+              v-if="mode == MODE_RECT"
               autosize
               placeholder="宽"
               v-model:value="size.width"
+              :disabled="!active"
               :allow-input="onlyAllowNumber"
             />
             <n-input
+              v-if="mode == MODE_RECT"
               autosize
               placeholder="高"
               v-model:value="size.height"
+              :disabled="!active"
+              :allow-input="onlyAllowNumber"
+            />
+            <n-input
+              v-if="mode == MODE_CIR"
+              autosize
+              placeholder="半径"
+              v-model:value="size.radius"
+              :disabled="!active"
               :allow-input="onlyAllowNumber"
             />
           </n-input-group>
@@ -137,5 +160,8 @@ const handleUpload = () => {
 }
 .n-h3-error::after {
   background: rgba(208, 48, 80, 0.2);
+}
+.n-select {
+  width: 160px;
 }
 </style>
