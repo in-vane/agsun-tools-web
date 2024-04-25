@@ -137,6 +137,7 @@ const handlePartCount = () => {
     page_explore: images.value[current.value]?.page,
     page_table: pageTable.value,
     pair_index: pairIndex.value,
+    columnCount: columnCount.value,
   };
   lyla
     .post('/partCount', { json: params })
@@ -404,5 +405,9 @@ onUnmounted(() => {
 }
 .crop-box {
   width: 400px;
+}
+.n-input {
+  min-width: 40px;
+  width: 64px;
 }
 </style>
