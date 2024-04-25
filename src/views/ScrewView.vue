@@ -212,6 +212,7 @@ const OCRColumns = [
   {
     title: '螺丝类别',
     key: 'type',
+    sorter: 'default',
     render(row, index) {
       return h(NInput, {
         value: row.type,
