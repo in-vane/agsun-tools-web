@@ -420,6 +420,6 @@ const options = {
   min-width: 400px;
 }
 .crop-box {
-  margin-top: 8px;
+  margin: 8px 0;
 }
 </style>

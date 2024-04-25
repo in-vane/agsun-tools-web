@@ -409,7 +409,7 @@ onUnmounted(() => {
   background: rgba(208, 48, 80, 0.2);
 }
 .crop-box {
-  width: 400px;
+  width: 640px;
 }
 .form-box {
   width: 400px;
