@@ -12,3 +12,10 @@ export const PDF2IMG_MODE = {
   NORMAL: 0,
   VECTOR: 1,
 };
+
+export const CROP_BOX_STYLE = {
+  height: '400px',
+  width: '100%',
+  border: '1px dashed rgb(224, 224, 230)',
+  borderRadius: '3px',
+};

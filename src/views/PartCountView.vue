@@ -1,7 +1,11 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useMessage } from 'naive-ui';
-import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
+import {
+  ArchiveOutline as ArchiveIcon,
+  AddOutline as AddIcon,
+  TrashOutline as TrashIcon,
+} from '@vicons/ionicons5';
 import { lyla, SOCKET_URL } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import {
@@ -9,8 +13,9 @@ import {
   INFO_NO_FILE,
   PDF2IMG_MODE,
   WEBSOCKET_TYPE,
+  CROP_BOX_STYLE,
 } from '@/config/const.config';
-import { onlyAllowNumber } from '@/utils';
+import { onlyAllowNumber as num } from '@/utils';
 
 const message = useMessage();
 const upload = ref(null);
@@ -19,7 +24,15 @@ const ws = ref(null);
 const fileList = ref([]);
 const images = ref([]);
 const current = ref(0);
-const pageNumberTable = ref('');
+const pageTable = ref('1');
+const columnCount = ref('3');
+const pairIndex = ref([
+  {
+    key: `${new Date().getTime()}`,
+    index: '1',
+    count: '0',
+  },
+]);
 const cropend = ref('');
 const rect = ref([]);
 const response = ref({
@@ -111,22 +124,22 @@ const handleUpload = () => {
 };
 
 const handlePartCount = () => {
-  let pageNumber = parseInt(pageNumberTable.value);
+  let pageNumber = parseInt(pageTable.value);
   if (Number.isNaN(pageNumber)) {
     message.error('请正确填写明细表的页码数');
     return;
   }
   loadingPartCount.value = true;
   const file = fileList.value[0].file;
-  const formData = new FormData();
-  formData.append('filename', file.name);
-  for (let i = 0; i < 4; i++) {
-    formData.append('rect', rect.value[i]);
-  }
-  formData.append('pageNumberExplore', images.value[current.value]?.page);
-  formData.append('pageNumberTable', pageNumberTable.value);
+  const params = {
+    filename: file.name,
+    rect: rect.value,
+    page_explore: images.value[current.value]?.page,
+    page_table: pageTable.value,
+    pair_index: pairIndex.value,
+  };
   lyla
-    .post('/partCount', { body: formData })
+    .post('/partCount', { json: params })
     .then((res) => {
       console.log(res);
       response.value = res.json;
@@ -141,14 +154,6 @@ const handleKeyDownEsc = (e) => {
   if (e.keyCode == 27) {
     cropper.clear();
   }
-};
-
-const boxStyle = {
-  height: '400px',
-  width: '100%',
-  border: '1px dashed rgb(224, 224, 230)',
-  borderRadius: '3px',
-  marginTop: '8px',
 };
 
 const options = {
@@ -183,6 +188,22 @@ const columns = [
 ];
 
 const renderRowClass = (rowData) => (rowData[1] ? '' : 'row-error');
+
+const addItem = () => {
+  pairIndex.value.push({
+    key: `${new Date().getTime()}`,
+    index: '1',
+    count: '0',
+  });
+};
+
+const removeItem = (key) => {
+  console.log(key);
+  const i = pairIndex.value.findIndex((item) => item.key === key);
+  if (i !== -1) {
+    pairIndex.value.splice(i, 1);
+  }
+};
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeyDownEsc);
@@ -229,17 +250,6 @@ onUnmounted(() => {
     <!-- preview -->
     <n-spin :show="loadingPartCount">
       <n-h3 prefix="bar">2. 文件图像预览</n-h3>
-      <n-space>
-        <n-input
-          v-model:value="pageNumberTable"
-          :allow-input="onlyAllowNumber"
-          type="text"
-          placeholder="请输入明细表的页码数"
-        />
-        <n-button type="primary" ghost @click="handlePartCount">
-          开始任务
-        </n-button>
-      </n-space>
       <div class="scroll-box">
         <n-scrollbar class="n-scrollbar" x-scrollable>
           <div class="preview-box">
@@ -270,11 +280,61 @@ onUnmounted(() => {
           />
         </div>
       </div>
-      <vue-picture-cropper
-        :boxStyle="boxStyle"
-        :img="images[current]?.src"
-        :options="options"
-      />
+      <div class="scroll-box">
+        <div class="crop-box">
+          <vue-picture-cropper
+            :boxStyle="CROP_BOX_STYLE"
+            :img="images[current]?.src"
+            :options="options"
+          />
+        </div>
+        <n-space vertical>
+          <n-input-group>
+            <n-input-group-label>明细表在第</n-input-group-label>
+            <n-input v-model:value="pageTable" :allow-input="num" type="text" />
+            <n-input-group-label>页</n-input-group-label>
+          </n-input-group>
+          <n-input-group>
+            <n-input-group-label>共</n-input-group-label>
+            <n-input
+              v-model:value="columnCount"
+              :allow-input="num"
+              type="text"
+            />
+            <n-input-group-label>列</n-input-group-label>
+          </n-input-group>
+          <div v-for="item in pairIndex" :key="item.key">
+            <n-input-group>
+              <n-input-group-label>第</n-input-group-label>
+              <n-input
+                v-model:value="item.index"
+                :allow-input="num"
+                type="text"
+              />
+              <n-input-group-label>列的序号对应第</n-input-group-label>
+              <n-input
+                v-model:value="item.count"
+                :allow-input="num"
+                type="text"
+              />
+              <n-input-group-label>列的数值</n-input-group-label>
+              <n-button ghost @click="() => removeItem(item.key)">
+                删除
+              </n-button>
+            </n-input-group>
+          </div>
+          <n-button block @click="addItem">
+            <template #icon>
+              <n-icon>
+                <add-icon />
+              </n-icon>
+            </template>
+          </n-button>
+          <n-button type="primary" ghost @click="handlePartCount">
+            开始任务
+          </n-button>
+        </n-space>
+      </div>
     </n-spin>
     <!-- result -->
     <div>
@@ -341,5 +401,8 @@ onUnmounted(() => {
 :deep(.row-error td) {
   color: rgb(208, 48, 80);
   background: rgba(208, 48, 80, 0.2);
+}
+.crop-box {
+  width: 400px;
 }
 </style>

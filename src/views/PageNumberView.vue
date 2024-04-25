@@ -9,6 +9,7 @@ import {
   INFO_NO_FILE,
   PDF2IMG_MODE,
   WEBSOCKET_TYPE,
+  CROP_BOX_STYLE
 } from '@/config/const.config';
 
 const message = useMessage();
@@ -131,14 +132,6 @@ const handleGetCrop = () => {
   cropend.value = base64;
 };
 
-const boxStyle = {
-  height: '400px',
-  width: '100%',
-  border: '1px dashed rgb(224, 224, 230)',
-  borderRadius: '3px',
-  marginTop: '8px',
-};
-
 const options = {
   viewMode: 1,
   dragMode: 'move',
@@ -210,7 +203,7 @@ const options = {
         </div>
       </div>
       <vue-picture-cropper
-        :boxStyle="boxStyle"
+        :boxStyle="CROP_BOX_STYLE"
         :img="images[current]?.src"
         :options="options"
       />

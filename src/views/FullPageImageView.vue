@@ -8,6 +8,7 @@ import {
   SHARD_SIZE,
   PDF2IMG_MODE,
   WEBSOCKET_TYPE,
+  CROP_BOX_STYLE,
 } from '@/config/const.config';
 import { onlyAllowNumber } from '@/utils';
 
@@ -183,14 +184,6 @@ const handleKeyDownEsc = (e) => {
   }
 };
 
-const boxStyle = {
-  height: '400px',
-  width: '100%',
-  border: '1px dashed rgb(224, 224, 230)',
-  borderRadius: '3px',
-  marginTop: '8px',
-};
-
 const options = {
   viewMode: 1,
   dragMode: 'move',
@@ -354,7 +347,7 @@ onUnmounted(() => {
           </n-button>
         </n-space>
         <vue-picture-cropper
-          :boxStyle="boxStyle"
+          :boxStyle="CROP_BOX_STYLE"
           :img="images[current[0]][current[1]]"
           :options="options"
         />
