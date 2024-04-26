@@ -45,7 +45,7 @@ const handleValidateButtonClick = (e) => {
         message.destroyAll();
         if (response.code === 0) {
           const toPath = decodeURIComponent(route.query?.redirect || '/');
-          message.success('登录成功，即将进入系统');
+          message.success(response.message || '登录成功，即将进入系统');
           router.replace(toPath);
         } else {
           message.info(response.message || '登录失败');

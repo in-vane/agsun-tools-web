@@ -43,13 +43,11 @@ export const useUserStore = defineStore({
       const response = await lyla.post('/login', { json: params });
       const { json } = response;
       const { code, data, message } = json;
-      const userinfo = {
-        username: params.username,
-      };
+
       if (code === 0) {
-        storage.set(CURRENT_USER, userinfo);
-        this.setUserInfo(userinfo);
+        storage.set(CURRENT_USER, data.userinfo);
         storage.set(ACCESS_TOKEN, data.access_token);
+        this.setUserInfo(data.userinfo);
         this.setToken(data.access_token);
       }
       return json;
