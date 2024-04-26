@@ -21,6 +21,7 @@ import agsun from '@/assets/agsun.jpeg';
 
 const userStore = useUserStore();
 const userInfo = userStore.getUserInfo || {};
+console.log(userInfo)
 
 const renderLabel = (path, label) => () =>
   h(RouterLink, { to: { path } }, { default: () => label });
@@ -105,7 +106,7 @@ const logoutHanlder = async () => {
       <n-flex justify="space-between" align="center">
         <n-image :src="agsun" />
         <n-space>
-          <n-text>欢迎, {{ userInfo.username }}</n-text>
+          <n-text>欢迎, {{ userInfo.name }}</n-text>
           <n-button text @click="logoutHanlder">
             <n-icon size="24">
               <i-logout />
