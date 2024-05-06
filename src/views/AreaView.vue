@@ -18,6 +18,7 @@ const ws = ref(null);
 const completed = ref([false, false]);
 
 const fileList = ref([]);
+const filePath = ref('');
 const active = ref(false);
 const limit = ref([
   { start: '', end: '' },
@@ -81,7 +82,10 @@ const openWebsocket = () => {
   };
   websocket.onmessage = (e) => {
     const data = JSON.parse(e.data);
-    const { total, current, img_base64, options } = data;
+    const { total, current, img_base64, file_path, options } = data;
+    if (file_path) {
+      filePath.value = file_path;
+    }
     if (img_base64) {
       images.value[options.index].push(img_base64);
       progress.value[options.index] = `${current} / ${total}`;
@@ -158,11 +162,13 @@ const handleCompare = () => {
     return;
   }
   loadingCompare.value = true;
-  const formData = new FormData();
-  formData.append('img_1', cropend.value[0].split(',')[1]);
-  formData.append('img_2', cropend.value[1].split(',')[1]);
+  const params = {
+    file_path: filePath.value,
+    img_1: cropend.value[0].split(',')[1],
+    img_2: cropend.value[1].split(',')[1],
+  };
   lyla
-    .post('/area', { body: formData })
+    .post('/area', { json: params })
     .then((res) => {
       console.log(res);
       response.value = res.json;
@@ -173,10 +179,10 @@ const handleCompare = () => {
     });
 };
 
-const handleSaveResult = () => {
-  // const data = response.value.split(',')[1];
-  // handleDownload(data, 'img');
-};
+// const handleSaveResult = () => {
+//   const data = response.value.split(',')[1];
+//   handleDownload(data, 'img');
+// };
 
 const handleKeyDownEsc = (e) => {
   if (e.keyCode == 27) {
@@ -358,9 +364,9 @@ onUnmounted(() => {
         <n-spin :show="loadingCompare">
           <n-space justify="space-between">
             <n-h3 prefix="bar">5. 对比结果</n-h3>
-            <n-button type="primary" ghost @click="handleSaveResult">
+            <!-- <n-button type="primary" ghost @click="handleSaveResult">
               保存结果
-            </n-button>
+            </n-button> -->
           </n-space>
           <div class="preview-box preview-box-result">
             <n-image
