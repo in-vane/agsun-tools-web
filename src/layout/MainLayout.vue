@@ -13,6 +13,7 @@ import {
   CogOutline as ICog,
   CameraOutline as ICamera,
   LogOutOutline as ILogout,
+  PencilOutline as ILine
 } from '@vicons/ionicons5';
 import { renderIcon } from '@/utils';
 import { useUserStore } from '@/store/modules/user';
@@ -78,6 +79,11 @@ const menuOptions = [
     label: renderLabel('/ocr', '实物检测'),
     key: 'ocr',
     icon: renderIcon(ICamera),
+  },
+  {
+    label: renderLabel('/line', '线段检测'),
+    key: 'line',
+    icon: renderIcon(ILine),
   },
 ];
 

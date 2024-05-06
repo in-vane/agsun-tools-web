@@ -162,7 +162,7 @@ const handleCompare = () => {
   formData.append('img_1', cropend.value[0].split(',')[1]);
   formData.append('img_2', cropend.value[1].split(',')[1]);
   lyla
-    .post('/explore', { body: formData })
+    .post('/area', { body: formData })
     .then((res) => {
       console.log(res);
       response.value = res.json;

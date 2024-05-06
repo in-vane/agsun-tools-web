@@ -43,6 +43,16 @@ export function renderNew(
 //   },
 // };
 
+export const download = (filename, url) => {
+  let a = document.createElement('a');
+  a.style = 'display: none'; // 创建一个隐藏的a标签
+  a.download = filename;
+  a.href = url;
+  document.body.appendChild(a);
+  a.click(); // 触发a标签的click事件
+  document.body.removeChild(a);
+};
+
 // export const handleDownload = (value, fileType) => {
 //   const mime = CONST.MIME[fileType];
 //   // 将 base64 编码的字符串转换成二进制数据

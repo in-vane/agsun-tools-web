@@ -32,6 +32,7 @@ const response = ref({
   code: null,
   data: {
     result: [],
+    image_page: [],
   },
   msg: '',
 });
@@ -307,15 +308,6 @@ const options = {
             </div>
           </div>
         </n-scrollbar>
-        <div class="preview-crop">
-          <n-image
-            v-show="cropend"
-            :src="cropend"
-            height="120px"
-            width="100%"
-            alt="image"
-          />
-        </div>
       </div>
       <div class="crop-box">
         <vue-picture-cropper
@@ -340,6 +332,15 @@ const options = {
             </template>
           </n-button>
         </n-space>
+        <div class="preview-crop">
+          <n-image
+            v-show="cropend"
+            :src="cropend"
+            height="120px"
+            width="100%"
+            alt="image"
+          />
+        </div>
         <n-input-group>
           <n-input-group-label>步骤图从</n-input-group-label>
           <n-input
@@ -365,6 +366,11 @@ const options = {
     <!-- result -->
     <div>
       <n-h3 prefix="bar">4. 检测结果</n-h3>
+      <n-p class="n-p-errmsg" v-show="response.data?.image_page?.length">
+        该文档的第{{
+          response.data?.image_page
+        }}页的步骤图中，螺丝图例为图片，结果可能有误，请仔细检查。
+      </n-p>
       <n-data-table
         size="small"
         :columns="columns"
@@ -422,5 +428,10 @@ const options = {
 }
 .crop-box {
   margin: 8px 0;
+}
+.n-p-errmsg {
+  padding: 8px;
+  border-radius: 3px;
+  background: rgba(208, 48, 80, 0.2);
 }
 </style>

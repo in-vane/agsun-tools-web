@@ -80,6 +80,11 @@ export const asyncRoutes = [
         name: 'ocr',
         component: () => import('@/views/OCRView.vue'),
       },
+      {
+        path: '/line',
+        name: 'line',
+        component: () => import('@/views/LineView.vue'),
+      },
     ],
   },
 ];

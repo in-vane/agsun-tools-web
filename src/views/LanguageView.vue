@@ -10,7 +10,7 @@ const upload = ref(null);
 const message = useMessage();
 
 const fileList = ref([]);
-const limit = ref(15);
+const limit = ref('15');
 const response = ref({ code: -1, data: {}, msg: '' });
 
 const loading = ref(false);
