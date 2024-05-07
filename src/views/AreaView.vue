@@ -18,7 +18,7 @@ const ws = ref(null);
 const completed = ref([false, false]);
 
 const fileList = ref([]);
-const filePath = ref('');
+const filePath = ref(['', '']);
 const active = ref(false);
 const limit = ref([
   { start: '', end: '' },
@@ -84,10 +84,10 @@ const openWebsocket = () => {
     const data = JSON.parse(e.data);
     const { total, current, img_base64, file_path, options } = data;
     if (file_path) {
-      filePath.value = file_path;
     }
     if (img_base64) {
       images.value[options.index].push(img_base64);
+      filePath.value[options.index] = file_path;
       progress.value[options.index] = `${current} / ${total}`;
       completed.value[options.index] = current == total;
       completed.value.every((_) => _) && ws.value.close();
@@ -163,7 +163,8 @@ const handleCompare = () => {
   }
   loadingCompare.value = true;
   const params = {
-    file_path: filePath.value,
+    file_path_1: filePath.value[0],
+    file_path_2: filePath.value[1],
     img_1: cropend.value[0].split(',')[1],
     img_2: cropend.value[1].split(',')[1],
   };
