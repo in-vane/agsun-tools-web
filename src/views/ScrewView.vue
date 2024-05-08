@@ -318,7 +318,6 @@ const options = {
       </div>
       <n-button type="primary" ghost @click="handleOCR"> 识别螺丝包 </n-button>
     </n-spin>
-
     <n-spin :show="loadingRes">
       <n-h3 prefix="bar">3. 检查</n-h3>
       <n-space>

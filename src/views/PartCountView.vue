@@ -1,6 +1,6 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue';
-import { useMessage } from 'naive-ui';
+import { onMounted, onUnmounted, ref, h } from 'vue';
+import { useMessage, NInput } from 'naive-ui';
 import {
   ArchiveOutline as ArchiveIcon,
   AddOutline as AddIcon,
@@ -22,19 +22,51 @@ const upload = ref(null);
 const ws = ref(null);
 
 const fileList = ref([]);
+const loadingUpload = ref(false);
+
 const images = ref([]);
 const current = ref(0);
-const pageTable = ref('1');
-const columnCount = ref('6');
-const pairIndex = ref([
-  {
-    key: `${new Date().getTime()}`,
-    index: '1',
-    count: '3',
-  },
-]);
 const cropend = ref('');
 const rect = ref([]);
+
+const MODE_NORMAL = 0;
+const MODE_OCR = 1;
+const sltoptions = [
+  { label: '常规模式', value: MODE_NORMAL },
+  { label: 'OCR模式', value: MODE_OCR },
+];
+const mode = ref(MODE_NORMAL);
+
+const tablePage = ref('1');
+const tablePages = ref([]);
+const columnCount = ref('6');
+const pairIndex = ref([
+  { key: `${new Date().getTime()}`, index: '1', count: '3' },
+]);
+
+const tableLength = ref('0');
+const tableData = ref([]);
+const OCRColumns = [
+  {
+    title: '序号',
+    key: 'key',
+  },
+  {
+    title: '数量',
+    key: 'count',
+    render(row, index) {
+      return h(NInput, {
+        value: row.count,
+        allowInput: num,
+        onUpdateValue(v) {
+          tableData.value[index].count = v;
+        },
+      });
+    },
+  },
+];
+
+const loadingPartCount = ref(false);
 const response = ref({
   code: null,
   data: {
@@ -44,9 +76,6 @@ const response = ref({
   },
   msg: '',
 });
-
-const loadingUpload = ref(false);
-const loadingPartCount = ref(false);
 
 const reset = () => {
   current.value = 0;
@@ -124,9 +153,8 @@ const handleUpload = () => {
 };
 
 const handlePartCount = () => {
-  let pageNumber = parseInt(pageTable.value);
-  if (Number.isNaN(pageNumber)) {
-    message.error('请正确填写明细表的页码数');
+  if (!tablePage.value) {
+    message.error('请正确填写明细表所在的页码数');
     return;
   }
   loadingPartCount.value = true;
@@ -135,12 +163,39 @@ const handlePartCount = () => {
     filename: file.name,
     rect: rect.value,
     page_explore: images.value[current.value]?.page,
-    page_table: pageTable.value,
+    page_table: tablePage.value,
     pair_index: pairIndex.value,
     columnCount: columnCount.value,
   };
   lyla
     .post('/partCount', { json: params })
+    .then((res) => {
+      console.log(res);
+      response.value = res.json;
+    })
+    .catch((err) => {})
+    .finally(() => {
+      loadingPartCount.value = false;
+    });
+};
+
+const handlePartCountOCR = () => {
+  if (!tablePages.value.length) {
+    message.error('请正确填写明细表所在的页码数');
+    return;
+  }
+  loadingPartCount.value = true;
+  const file = fileList.value[0].file;
+  const page_table = tablePages.value.slice().sort((a, b) => a - b);
+  const params = {
+    filename: file.name,
+    rect: rect.value,
+    page_explore: images.value[current.value]?.page,
+    page_table: page_table,
+    table_dict: tableData.value,
+  };
+  lyla
+    .post('/partCountOcr', { json: params })
     .then((res) => {
       console.log(res);
       response.value = res.json;
@@ -203,6 +258,19 @@ const removeItem = (key) => {
   if (i !== -1) {
     pairIndex.value.splice(i, 1);
   }
+};
+
+const resetTableLength = (v) => {
+  let len = parseInt(v);
+  if (Number.isNaN(len)) {
+    len = 0;
+    tableLength.value = `${len}`;
+  }
+  const d = [];
+  for (let i = 0; i < len; i++) {
+    d.push({ key: i + 1, count: '0' });
+  }
+  tableData.value = d;
 };
 
 onMounted(() => {
@@ -283,64 +351,100 @@ onUnmounted(() => {
       <div class="scroll-box">
         <div class="crop-box">
           <vue-picture-cropper
-            :boxStyle="CROP_BOX_STYLE"
+            :boxStyle="{ ...CROP_BOX_STYLE, height: '600px' }"
             :img="images[current]?.src"
             :options="options"
           />
         </div>
         <n-space class="form-box" vertical>
-          <n-input-group>
-            <n-input-group-label>明细表在第</n-input-group-label>
-            <n-input v-model:value="pageTable" :allow-input="num" type="text" />
-            <n-input-group-label>页</n-input-group-label>
-          </n-input-group>
-          <n-input-group>
-            <n-input-group-label>共</n-input-group-label>
-            <n-input
-              v-model:value="columnCount"
-              :allow-input="num"
-              type="text"
-            />
-            <n-input-group-label>列</n-input-group-label>
-          </n-input-group>
-          <div v-for="item in pairIndex" :key="item.key">
+          <n-select v-model:value="mode" :options="sltoptions" />
+          <template v-if="mode == MODE_NORMAL">
             <n-input-group>
-              <n-input-group-label>第</n-input-group-label>
+              <n-input-group-label>明细表在第</n-input-group-label>
               <n-input
-                v-model:value="item.index"
+                v-model:value="tablePages"
                 :allow-input="num"
                 type="text"
               />
-              <n-input-group-label>列的序号对应第</n-input-group-label>
-              <n-input
-                v-model:value="item.count"
-                :allow-input="num"
-                type="text"
-              />
-              <n-input-group-label>列的数值</n-input-group-label>
-              <n-button
-                v-if="pairIndex.length > 1"
-                quaternary
-                round
-                @click="() => removeItem(item.key)"
-              >
-                <n-icon>
-                  <trash-icon />
-                </n-icon>
-              </n-button>
+              <n-input-group-label>页</n-input-group-label>
             </n-input-group>
-          </div>
-          <n-button block @click="addItem">
-            <template #icon>
-              <n-icon>
-                <add-icon />
-              </n-icon>
-            </template>
-          </n-button>
+            <n-input-group>
+              <n-input-group-label>明细表共</n-input-group-label>
+              <n-input
+                v-model:value="columnCount"
+                :allow-input="num"
+                type="text"
+              />
+              <n-input-group-label>列</n-input-group-label>
+            </n-input-group>
+            <div v-for="item in pairIndex" :key="item.key">
+              <n-input-group>
+                <n-input-group-label>第</n-input-group-label>
+                <n-input
+                  v-model:value="item.index"
+                  :allow-input="num"
+                  type="text"
+                />
+                <n-input-group-label>列的序号对应第</n-input-group-label>
+                <n-input
+                  v-model:value="item.count"
+                  :allow-input="num"
+                  type="text"
+                />
+                <n-input-group-label>列的数值</n-input-group-label>
+                <n-button
+                  v-if="pairIndex.length > 1"
+                  quaternary
+                  round
+                  @click="() => removeItem(item.key)"
+                >
+                  <n-icon>
+                    <trash-icon />
+                  </n-icon>
+                </n-button>
+              </n-input-group>
+            </div>
+            <n-button block @click="addItem">
+              <template #icon>
+                <n-icon>
+                  <add-icon />
+                </n-icon>
+              </template>
+            </n-button>
+            <n-button type="primary" ghost @click="handlePartCount">
+              开始任务
+            </n-button>
+          </template>
+          <template v-else>
+            <n-space align="center">
+              <n-input-group-label>明细表所在页码</n-input-group-label>
+              <n-dynamic-tags
+                :input-props="{ allowInput: num }"
+                v-model:value="tablePages"
+              />
+            </n-space>
+            <n-input-group>
+              <n-input-group-label>明细表有</n-input-group-label>
+              <n-input
+                v-model:value="tableLength"
+                :allow-input="num"
+                @change="resetTableLength"
+                autosize
+                placeholder="请输入"
+              />
+              <n-input-group-label>种零件</n-input-group-label>
+            </n-input-group>
+            <n-data-table
+              size="small"
+              max-height="375px"
+              :columns="OCRColumns"
+              :data="tableData"
+            />
+            <n-button type="primary" ghost @click="handlePartCountOCR">
+              开始任务
+            </n-button>
+          </template>
         </n-space>
-        <n-button type="primary" ghost @click="handlePartCount">
-          开始任务
-        </n-button>
       </div>
     </n-spin>
     <!-- result -->
@@ -409,9 +513,17 @@ onUnmounted(() => {
   background: rgba(208, 48, 80, 0.2);
 }
 .crop-box {
-  width: 640px;
+  width: 50%;
 }
 .form-box {
-  width: 400px;
+  max-width: 50%;
+  gap: 12px !important;
+  flex: 1;
+}
+.n-select {
+  width: 160px;
+}
+.n-input {
+  min-width: 80px;
 }
 </style>
