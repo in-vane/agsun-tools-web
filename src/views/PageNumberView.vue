@@ -36,7 +36,7 @@ const MODE_NORMAL = 0;
 const MODE_RECT = 1;
 const sltoptions = [
   { label: '默认模式', value: MODE_NORMAL },
-  { label: '指定页码高度', value: MODE_RECT },
+  { label: '区域模式', value: MODE_RECT },
 ];
 const mode = ref(MODE_NORMAL);
 
