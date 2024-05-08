@@ -32,6 +32,14 @@ const response = ref({
   msg: '',
 });
 
+const MODE_NORMAL = 0;
+const MODE_RECT = 1;
+const sltoptions = [
+  { label: '默认模式', value: MODE_NORMAL },
+  { label: '指定页码高度', value: MODE_RECT },
+];
+const mode = ref(MODE_NORMAL);
+
 const loadingUpload = ref(false);
 const loadingResult = ref(false);
 
@@ -104,9 +112,12 @@ const handleUpload = () => {
 };
 
 const sendRect = () => {
-  if (!rect.value.length) {
+  if (mode.value == MODE_RECT && !cropend.value) {
     message.error('请拉取页码范围高度');
     return;
+  }
+  if (mode.value == MODE_NORMAL) {
+    rect.value = [0, 0, 0, 0];
   }
   loadingResult.value = true;
   const params = {
@@ -171,7 +182,10 @@ const options = {
     <!-- crop -->
     <n-spin :show="loadingResult">
       <n-h3 prefix="bar">2. 请拉取页码范围高度</n-h3>
-      <n-button type="primary" ghost @click="sendRect"> 开始任务 </n-button>
+      <n-space align="center">
+        <n-select v-model:value="mode" :options="sltoptions" />
+        <n-button type="primary" ghost @click="sendRect"> 开始任务 </n-button>
+      </n-space>
       <div class="scroll-box">
         <n-scrollbar class="n-scrollbar" x-scrollable>
           <div class="preview-box">
@@ -192,7 +206,7 @@ const options = {
             </div>
           </div>
         </n-scrollbar>
-        <div class="preview-crop">
+        <div class="preview-crop" v-if="mode == MODE_RECT">
           <n-image
             v-show="cropend"
             :src="cropend"
@@ -202,7 +216,7 @@ const options = {
           />
         </div>
       </div>
-      <div class="crop-box">
+      <div class="crop-box" v-if="mode == MODE_RECT">
         <vue-picture-cropper
           :boxStyle="CROP_BOX_STYLE"
           :img="images[current]?.src"
@@ -282,5 +296,8 @@ const options = {
 }
 .crop-box {
   margin-top: 8px;
+}
+.n-select {
+  width: 160px;
 }
 </style>
