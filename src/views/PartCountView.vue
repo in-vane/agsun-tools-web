@@ -362,7 +362,7 @@ onUnmounted(() => {
             <n-input-group>
               <n-input-group-label>明细表在第</n-input-group-label>
               <n-input
-                v-model:value="tablePages"
+                v-model:value="tablePage"
                 :allow-input="num"
                 type="text"
               />
