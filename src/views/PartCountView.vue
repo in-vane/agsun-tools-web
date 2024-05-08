@@ -198,7 +198,11 @@ const handlePartCountOCR = () => {
     .post('/partCountOcr', { json: params })
     .then((res) => {
       console.log(res);
-      response.value = res.json;
+      response.value = {
+        ...res.json,
+        pages: res.json.data.error_pages[0],
+        images: res.json.data.error_pages[1],
+      };
     })
     .catch((err) => {})
     .finally(() => {
@@ -455,11 +459,11 @@ onUnmounted(() => {
         <n-space>
           <div
             class="preview-item"
-            v-for="(img, i) in response.data.error_pages?.[0]"
+            v-for="(page, i) in response.pages"
             :key="i"
           >
-            <n-badge :value="response.data.error_pages?.[1][i]">
-              <n-image :src="img" alt="image" height="200px" />
+            <n-badge :value="page">
+              <n-image :src="response.images[i]" alt="image" height="200px" />
             </n-badge>
           </div>
         </n-space>
