@@ -128,7 +128,7 @@ const handleUpload = () => {
         :class="`n-h3-${response.data?.error ? 'error' : 'success'}`"
         :type="response.data?.error ? 'error' : 'success'"
       >
-        2. 检测结果: {{ response.msg }}
+        2. 检测结果: {{ response.data?.message }}
       </n-h3>
       <n-image :src="response.data?.img_base64" alt="image" height="400px" />
     </div>
