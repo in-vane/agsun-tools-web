@@ -1,5 +1,7 @@
 import { h } from 'vue';
 import { NIcon, NTag } from 'naive-ui';
+import SparkMD5 from 'spark-md5';
+import { lyla } from '@/request';
 
 /**
  * 只能输入数字
@@ -78,3 +80,23 @@ export const download = (filename, url) => {
 //   // 释放临时的 URL
 //   URL.revokeObjectURL(url);
 // };
+
+export const isFileUploaded = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const arrayBuffer = reader.result;
+      const md5 = SparkMD5.ArrayBuffer.hash(arrayBuffer);
+      const params = { md5 };
+      lyla
+        .post('/isFileUploaded', { json: params })
+        .then((res) => {
+          console.log(res);
+          let result = res.json.data?.result;
+          result = Array.isArray(result) ? result : [];
+          resolve(result);
+        })
+        .catch((err) => reject(err));
+    };
+    reader.readAsArrayBuffer(file);
+  });

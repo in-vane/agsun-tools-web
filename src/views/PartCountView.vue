@@ -37,6 +37,7 @@ const sltoptions = [
 ];
 const mode = ref(MODE_NORMAL);
 
+const explorePage = ref(0);
 const tablePage = ref('1');
 const tablePages = ref([]);
 const columnCount = ref('6');
@@ -142,6 +143,7 @@ const handleGetCrop = () => {
   const data = cropper.getData(true);
   rect.value = [data.x, data.y, data.width, data.height];
   cropend.value = base64;
+  explorePage.value = current.value;
 };
 
 const handleUpload = () => {
@@ -162,7 +164,7 @@ const handlePartCount = () => {
   const params = {
     filename: file.name,
     rect: rect.value,
-    page_explore: images.value[current.value]?.page,
+    page_explore: images.value[explorePage.value]?.page,
     page_table: tablePage.value,
     pair_index: pairIndex.value,
     columnCount: columnCount.value,
@@ -190,7 +192,7 @@ const handlePartCountOCR = () => {
   const params = {
     filename: file.name,
     rect: rect.value,
-    page_explore: images.value[current.value]?.page,
+    page_explore: images.value[explorePage.value]?.page,
     page_table: page_table,
     table_dict: tableData.value,
   };

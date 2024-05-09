@@ -22,7 +22,7 @@ export const asyncRoutes = [
     children: [
       {
         path: '/home',
-        name: 'Home',
+        name: 'home',
         component: () => import('@/views/HomeView.vue'),
       },
       {
