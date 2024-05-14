@@ -159,6 +159,8 @@ const handleCheck = () => {
     start: limit.value.start,
     end: limit.value.end,
     file_path: filePath.value,
+    page: current.value,
+    rect: rect.value,
   };
   lyla
     .post('/screw/compare', { json: params })
