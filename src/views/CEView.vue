@@ -13,7 +13,8 @@ const fileList = ref([]);
 const response = ref({
   code: null,
   data: {
-    image_base64: '',
+    excel_image_base64: '',
+    pdf_image_base64: '',
   },
   msg: '',
 });
@@ -101,8 +102,14 @@ const handleUpload = () => {
     <n-divider />
     <n-h3 prefix="bar">2. 检测结果</n-h3>
     <n-image
-      v-show="response.data?.image_base64"
-      :src="response.data?.image_base64"
+      v-show="response.data?.excel_image_base64"
+      :src="response.data?.image_bexcel_image_base64ase64"
+      alt="image"
+      width="100%"
+    />
+    <n-image
+      v-show="response.data?.pdf_image_base64"
+      :src="response.data?.pdf_image_base64"
       alt="image"
       width="100%"
     />

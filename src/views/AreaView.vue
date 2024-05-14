@@ -364,7 +364,7 @@ onUnmounted(() => {
       <div class="box-divider-item">
         <n-spin :show="loadingCompare">
           <n-space justify="space-between">
-            <n-h3 prefix="bar">5. 对比结果</n-h3>
+            <n-h3 prefix="bar">4. 对比结果</n-h3>
             <!-- <n-button type="primary" ghost @click="handleSaveResult">
               保存结果
             </n-button> -->
