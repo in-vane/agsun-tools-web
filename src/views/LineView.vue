@@ -22,11 +22,10 @@ const response = ref({
   msg: '',
 });
 
-const loadingUpload = ref(false);
-const loadingCheck = ref(false);
+const loading = ref(false);
 
 const openWebsocket = () => {
-  loadingUpload.value = true;
+  loading.value = true;
   const websocket = new WebSocket(SOCKET_URL);
 
   websocket.onopen = (e) => {
@@ -35,7 +34,7 @@ const openWebsocket = () => {
   };
   websocket.onclose = (e) => {
     console.log('disconnected: ', e);
-    loadingUpload.value = false;
+    loading.value = false;
   };
   websocket.onmessage = (e) => {
     const data = JSON.parse(e.data);
@@ -87,7 +86,7 @@ const handleUpload = () => {
 };
 
 const handleCheck = () => {
-  loadingCheck.value = true;
+  loading.value = true;
   const params = {
     file_path: filePath.value,
   };
@@ -99,7 +98,7 @@ const handleCheck = () => {
     })
     .catch((err) => {})
     .finally(() => {
-      loadingCheck.value = false;
+      loading.value = false;
     });
 };
 
@@ -113,7 +112,7 @@ const handleDownload = () => {
 <template>
   <n-space vertical>
     <!-- upload -->
-    <n-spin :show="loadingUpload">
+    <n-spin :show="loading">
       <n-h3 prefix="bar">1. 上传PDF</n-h3>
       <n-upload
         ref="upload"
