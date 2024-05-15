@@ -33,7 +33,7 @@ const loadingRes = ref(false);
 const response = ref({ code: -1, data: {}, msg: '' });
 
 const reset = () => {
-  current.value = '0';
+  current.value = '1';
   images.value = [];
   filePath.value = '';
 };
@@ -83,7 +83,7 @@ const openWebsocket = () => {
     const data = JSON.parse(e.data);
     const { img_base64, total, current, file_path } = data;
     if (img_base64) {
-      images.value.push({ src: img_base64, page: current });
+      images.value.push({ src: img_base64, page: current + 1 });
       if (current == total) {
         console.log(current, total);
         ws.value.close();
@@ -117,8 +117,7 @@ const handleOCR = () => {
     .post('/language/context', { json: params })
     .then((res) => {
       console.log(res);
-      response.value = res.json;
-      overview.value = res.json.data.result
+      overview.value = res.json.data.result;
     })
     .catch((err) => {})
     .finally(() => {
@@ -130,7 +129,8 @@ const handleCompare = () => {
   loadingOCR.value = true;
   const params = {
     file_path: filePath.value,
-    page: current.value,
+    table: overview.value,
+    start: textStart.value,
   };
   lyla
     .post('/language/compare', { json: params })
@@ -174,9 +174,9 @@ const OCRColumns = [
     key: 'language',
     render(row, index) {
       return h(NInput, {
-        value: row.type,
+        value: row.language,
         onUpdateValue(v) {
-          overview.value[index].type = v;
+          overview.value[index].language = v;
         },
       });
     },
@@ -186,9 +186,9 @@ const OCRColumns = [
     key: 'start',
     render(row, index) {
       return h(NInput, {
-        value: row.count,
+        value: row.start,
         onUpdateValue(v) {
-          overview.value[index].count = v;
+          overview.value[index].start = v;
         },
       });
     },
@@ -245,7 +245,7 @@ const OCRColumns = [
               <div class="preview-item" v-for="(img, i) in images" :key="i">
                 <n-badge
                   :value="i + 1"
-                  :color="current == i ? '#18a058' : 'gray'"
+                  :color="current == i + 1 ? '#18a058' : 'gray'"
                   :offset="[-10, 10]"
                 >
                   <n-image
@@ -253,7 +253,7 @@ const OCRColumns = [
                     alt="image"
                     height="200px"
                     preview-disabled
-                    @click="() => (current = i)"
+                    @click="() => (current = i + 1)"
                   />
                 </n-badge>
               </div>
