@@ -27,6 +27,7 @@ const response = ref({
   data: {
     error: false,
     error_page: [],
+    note: '',
     result: [],
   },
   msg: '',
@@ -231,7 +232,7 @@ const options = {
         :class="`n-h3-${response.data?.error ? 'error' : 'success'}`"
         :type="response.data?.error ? 'error' : 'success'"
       >
-        3. 检测结果: {{ response.data?.error ? '页码有误' : '页码无误' }}
+        3. 检测结果: {{ response.data?.note }}
       </n-h3>
       <n-image-group>
         <n-space>
