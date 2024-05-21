@@ -118,6 +118,7 @@ const handleOCR = () => {
     .then((res) => {
       console.log(res);
       overview.value = res.json.data.result;
+      textStart.value = res.json.data.start;
     })
     .catch((err) => {})
     .finally(() => {
