@@ -10,14 +10,6 @@ const message = useMessage();
 const upload = ref(null);
 
 const fileList = ref([]);
-const response = ref({
-  code: null,
-  data: {
-    excel_image_base64: '',
-    pdf_image_base64: '',
-  },
-  msg: '',
-});
 
 const mode = ref(0);
 const sheet = ref('1');
@@ -27,6 +19,14 @@ const options = [
 ];
 
 const loading = ref(false);
+const response = ref({
+  code: null,
+  data: {
+    excel_image_base64: '',
+    pdf_image_base64: '',
+  },
+  msg: '',
+});
 
 const handleUpload = () => {
   if (!fileList.value.length) {
@@ -101,18 +101,18 @@ const handleUpload = () => {
     </n-spin>
     <n-divider />
     <n-h3 prefix="bar">2. 检测结果</n-h3>
-    <n-image
-      v-show="response.data?.excel_image_base64"
-      :src="response.data?.image_bexcel_image_base64ase64"
-      alt="image"
-      width="100%"
-    />
-    <n-image
-      v-show="response.data?.pdf_image_base64"
-      :src="response.data?.pdf_image_base64"
-      alt="image"
-      width="100%"
-    />
+    <div class="result-box">
+      <n-image
+        v-show="response.data?.excel_image_base64"
+        :src="response.data?.excel_image_base64"
+        width="100%"
+      />
+      <n-image
+        v-show="response.data?.pdf_image_base64"
+        :src="response.data?.pdf_image_base64"
+        width="100%"
+      />
+    </div>
   </div>
 </template>
 
@@ -122,5 +122,13 @@ const handleUpload = () => {
 }
 .n-input {
   min-width: 56px;
+}
+.result-box {
+  display: flex;
+  gap: 0 16px;
+}
+.n-image {
+  border: 1px dashed rgb(224, 224, 230);
+  border-radius: 3px;
 }
 </style>

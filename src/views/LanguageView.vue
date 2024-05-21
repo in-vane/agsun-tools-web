@@ -362,7 +362,6 @@ const OCRColumns = [
   min-height: 200px;
   border-radius: 3px;
   border: 1px dashed rgb(224, 224, 230);
-  border-radius: 3px;
 }
 .n-data-table {
   min-width: 400px;
