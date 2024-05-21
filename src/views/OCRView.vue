@@ -1,5 +1,5 @@
 <script setup>
-import { onUnmounted, ref } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { lyla, SOCKET_URL } from '@/request';
 import {
@@ -10,15 +10,15 @@ import {
 } from '@/config/const.config';
 
 const message = useMessage();
-const ws = ref(null);
 
+const ws = ref(null);
+const loadingUpload = ref(false);
 const fileList = ref([]);
+const filePath = ref('');
 const images = ref([]);
 const progress = ref(0);
 const current = ref(0);
 const cameras = ref([]);
-const mediaTrack = ref(null);
-const response = ref({ error: true, result: [] });
 
 const MODE_CHAR = 0;
 const MODE_ICON = 1;
@@ -27,19 +27,23 @@ const options = [
   { label: '文字模式', value: MODE_CHAR },
   { label: '图标模式', value: MODE_ICON },
 ];
-const cropBase64 = ref('');
 
-const loadingWebsocket = ref(false);
-const loadingUpload = ref(false);
+const VIDEO_WIDTH = 3840;
+const VIDEO_HEIGHT = 2160;
+const videoRef = ref(null);
+const canvasRef = ref(null);
+const capturedImage = ref(null);
+const loadingCapture = ref(false);
 
-const VIDEO_WIDTH = 1080;
-const VIDEO_HEIGHT = 1920;
-// const VIDEO_HEIGHT = VIDEO_WIDTH * 1.414;
-const video = ref(null);
-const canvas = document.createElement('canvas');
-canvas.width = VIDEO_WIDTH;
-canvas.height = VIDEO_HEIGHT;
-const ctx = canvas.getContext('2d');
+const mediaTrack = ref(null);
+const response = ref({ error: true, result: [] });
+
+// ==========
+const reset = () => {
+  current.value = 0;
+  images.value = [];
+  filePath.value = '';
+};
 
 const openWebsocket = () => {
   const websocket = new WebSocket(SOCKET_URL);
@@ -47,6 +51,7 @@ const openWebsocket = () => {
   websocket.onopen = (e) => {
     console.log('connected: ', e);
     loadingUpload.value = true;
+    reset();
     sendMessage();
   };
   websocket.onclose = (e) => {
@@ -55,12 +60,13 @@ const openWebsocket = () => {
   };
   websocket.onmessage = (e) => {
     const data = JSON.parse(e.data);
-    const { img_base64, total, current } = data;
+    const { img_base64, total, current, file_path } = data;
     if (img_base64) {
       images.value.push(img_base64);
       progress.value = total; // 总数，用以显示进度
       current == total && ws.value.close();
     }
+    filePath.value = file_path;
   };
   websocket.onerror = (e) => {
     console.log('error: ', e);
@@ -104,10 +110,24 @@ const handleUploadPDF = () => {
   openWebsocket();
 };
 
-const handleCrop = () => {
-  ctx.drawImage(video.value, 0, 0, canvas.width, canvas.height);
-  const imgURL = canvas.toDataURL('image/jpeg', 1);
-  cropBase64.value = imgURL;
+const captureImage = () => {
+  if (videoRef.value && canvasRef.value) {
+    loadingCapture.value = true;
+    const context = canvasRef.value.getContext('2d');
+
+    // Set the canvas size to 4K resolution or the video’s actual resolution
+    const width = videoRef.value.videoWidth;
+    const height = videoRef.value.videoHeight;
+    console.log(width, height);
+
+    canvasRef.value.width = width;
+    canvasRef.value.height = height;
+    context.drawImage(videoRef.value, 0, 0, width, height);
+
+    // Get the data URL of the captured image
+    capturedImage.value = canvasRef.value.toDataURL('image/png');
+    loadingCapture.value = false;
+  }
 };
 
 const handleCompare = () => {
@@ -116,49 +136,37 @@ const handleCompare = () => {
     return;
   }
   handleCrop();
-  loadingWebsocket.value = true;
+  loadingUpload.value = true;
   const file = fileList.value[0].file;
   const url = mode.value == MODE_CHAR ? '/ocr_char' : '/ocr_icon';
-  const formData = new FormData();
-  formData.append('filename', file.name);
-  formData.append('mode', mode.value);
-  formData.append('page', current.value + 1);
-  formData.append('crop', cropBase64.value);
+  const params = {
+    filename: file.name,
+    mode: mode.value,
+    page: current.value + 1,
+    crop: capturedImage.value,
+  };
   lyla
-    .post(url, { body: formData })
+    .post(url, { json: params })
     .then((res) => {
       response.value = res.json;
     })
     .catch((err) => {})
     .finally(() => {
-      loadingWebsocket.value = false;
+      loadingUpload.value = false;
     });
 };
 
-const handleOpenCamera = () => {
-  navigator.mediaDevices
-    .getUserMedia({ video: { width: VIDEO_WIDTH, height: VIDEO_HEIGHT } })
-    .then((stream) => {
-      video.value.srcObject = stream;
-      mediaTrack.value = stream;
-      video.onloadedmetadata = (e) => {
-        video.play();
-      };
-      navigator.mediaDevices.enumerateDevices().then((devices) => {
-        const map = new Map();
-        devices.forEach((_) => {
-          map.set(_.groupId, _.label);
-        });
-        const options = [];
-        for (let [key, value] of map) {
-          options.push({ label: value, value: key });
-        }
-        cameras.value = options;
-      });
-    })
-    .catch((err) => {
-      console.log(err);
+const startCamera = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: VIDEO_WIDTH }, height: { ideal: VIDEO_HEIGHT } },
     });
+    if (videoRef.value) {
+      videoRef.value.srcObject = stream;
+    }
+  } catch (error) {
+    console.error('Error accessing the camera: ', error);
+  }
 };
 
 const handleSwitchCamera = (groupId) => {
@@ -178,7 +186,7 @@ const handleSwitchCamera = (groupId) => {
 };
 
 const handleCloseCamera = () => {
-  video.srcObject = null;
+  videoRef.srcObject = null;
   if (mediaTrack.value) {
     mediaTrack.value.getVideoTracks().forEach((track) => {
       track.stop();
@@ -186,7 +194,7 @@ const handleCloseCamera = () => {
   }
 };
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   handleCloseCamera();
 });
 </script>
@@ -208,7 +216,12 @@ onUnmounted(() => {
       >
         <n-button>选择文件</n-button>
       </n-upload>
-      <n-button type="primary" ghost class="upload-btn" @click="handleUploadPDF">
+      <n-button
+        type="primary"
+        ghost
+        class="upload-btn"
+        @click="handleUploadPDF"
+      >
         开始转换
       </n-button>
       <n-scrollbar x-scrollable>
@@ -233,7 +246,7 @@ onUnmounted(() => {
     <n-space vertical>
       <n-h3 prefix="bar">2. 拍摄对比</n-h3>
       <n-space>
-        <n-button @click="handleOpenCamera"> 开启摄像头 </n-button>
+        <n-button @click="startCamera"> 开启摄像头 </n-button>
         <n-popselect
           :options="cameras"
           :on-update:value="handleSwitchCamera"
@@ -242,38 +255,35 @@ onUnmounted(() => {
           <n-button :disabled="cameras.length == 0"> 切换摄像头 </n-button>
         </n-popselect>
         <n-select v-model:value="mode" :options="options" />
-        <n-button type="primary" ghost @click="handleCompare"> 开始检测 </n-button>
+        <n-button type="primary" ghost @click="captureImage"> 截取 </n-button>
+        <n-button type="primary" ghost @click="handleCompare">
+          开始检测
+        </n-button>
       </n-space>
       <!-- video区域 -->
-      <n-space>
-        <video
-          ref="video"
-          class="n-video"
-          autoplay
-          :width="VIDEO_WIDTH"
-          :height="VIDEO_HEIGHT"
-        ></video>
-        <n-image
-          v-show="images.length"
-          :src="images[current]"
-          alt="image"
-          :height="VIDEO_HEIGHT"
-        />
-        <div v-show="response.error">
-          <n-image-group>
-            <n-space>
-              <n-image
-                v-for="(img, i) in response.result"
-                :key="i"
-                :src="img"
-                alt="image"
-                width="200px"
-              />
-            </n-space>
-          </n-image-group>
-        </div>
-        <n-tag type="error" v-show="!response.error"> 该实物图无法检测 </n-tag>
-      </n-space>
+      <n-spin :show="loadingCapture">
+        <n-space size="small">
+          <video ref="videoRef" autoplay></video>
+          <n-image v-show="images.length" :src="images[current]" :width="160" />
+          <n-image v-show="capturedImage" :src="capturedImage" :width="160" />
+          <canvas ref="canvasRef"></canvas>
+        </n-space>
+      </n-spin>
+      <!-- result -->
+      <div v-show="response.error">
+        <n-image-group>
+          <n-space>
+            <n-image
+              v-for="(img, i) in response.result"
+              :key="i"
+              :src="img"
+              alt="image"
+              width="200px"
+            />
+          </n-space>
+        </n-image-group>
+      </div>
+      <n-tag type="error" v-show="!response.error"> 该实物图无法检测 </n-tag>
     </n-space>
   </div>
 </template>
@@ -296,9 +306,15 @@ onUnmounted(() => {
   border: 1px dashed rgb(224, 224, 230);
   border-radius: 3px;
 }
-.n-video {
+video {
   border-radius: 3px;
   background: #000;
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+}
+canvas {
+  display: none;
 }
 .n-image {
   border-radius: 3px;
