@@ -1,7 +1,7 @@
 <script setup>
 import { ref, h } from 'vue';
 import { useMessage, NButton, NInput, NIcon } from 'naive-ui';
-import { lyla, SOCKET_URL } from '@/request';
+import { lyla, openWebsocket } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import {
   ArchiveOutline as ArchiveIcon,
@@ -10,6 +10,7 @@ import {
 } from '@vicons/ionicons5';
 import {
   SHARD_SIZE,
+  INFO_NO_FILE,
   PDF2IMG_MODE,
   WEBSOCKET_TYPE,
   CROP_BOX_STYLE,
@@ -48,35 +49,6 @@ const reset = () => {
   rect.value = [];
 };
 
-const openWebsocket = () => {
-  loadingUpload.value = true;
-  const websocket = new WebSocket(SOCKET_URL);
-
-  websocket.onopen = (e) => {
-    console.log('connected: ', e);
-    reset();
-    sendMessage();
-  };
-  websocket.onclose = (e) => {
-    console.log('disconnected: ', e);
-    loadingUpload.value = false;
-  };
-  websocket.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    const { img_base64, total, current, file_path } = data;
-    if (img_base64) {
-      images.value.push({ src: img_base64, page: current });
-      current == total && ws.value.close();
-    }
-    filePath.value = file_path;
-  };
-  websocket.onerror = (e) => {
-    console.log('error: ', e);
-  };
-
-  ws.value = websocket;
-};
-
 const sendMessage = () => {
   const file = fileList.value[0].file;
   const size = file.size;
@@ -101,6 +73,30 @@ const sendMessage = () => {
     };
     reader.readAsDataURL(fileClip);
   }
+};
+
+const onopen = (e) => {
+  console.log('connected: ', e);
+  reset();
+  sendMessage();
+};
+
+const onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  const { img_base64, total, current, file_path } = data;
+  if (img_base64) {
+    images.value.push({ src: img_base64, page: current });
+    current == total && ws.value.close();
+  }
+  filePath.value = file_path;
+};
+
+const handleUpload = () => {
+  if (!fileList.value.length) {
+    message.info(INFO_NO_FILE);
+    return;
+  }
+  ws.value = openWebsocket(loadingUpload, onopen, onmessage);
 };
 
 const handleOCR = () => {
@@ -283,9 +279,7 @@ const options = {
           </n-p>
         </n-upload-dragger>
       </n-upload>
-      <n-button type="primary" ghost @click="openWebsocket">
-        开始转换
-      </n-button>
+      <n-button type="primary" ghost @click="handleUpload"> 开始转换 </n-button>
     </n-spin>
     <!-- crop table -->
     <n-spin :show="loadingOCR">

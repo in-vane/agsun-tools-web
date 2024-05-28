@@ -2,12 +2,8 @@
 import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
-import { lyla, SOCKET_URL } from '@/request';
-import {
-  INFO_NO_FILE,
-  SHARD_SIZE,
-  WEBSOCKET_TYPE,
-} from '@/config/const.config.js';
+import { lyla, openWebsocket } from '@/request';
+import { SHARD_SIZE, WEBSOCKET_TYPE } from '@/config/const.config.js';
 import { download } from '@/utils';
 
 const message = useMessage();
@@ -23,34 +19,6 @@ const response = ref({
 });
 
 const loading = ref(false);
-
-const openWebsocket = () => {
-  loading.value = true;
-  const websocket = new WebSocket(SOCKET_URL);
-
-  websocket.onopen = (e) => {
-    console.log('connected: ', e);
-    sendMessage();
-  };
-  websocket.onclose = (e) => {
-    console.log('disconnected: ', e);
-    loading.value = false;
-  };
-  websocket.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    const { file_path } = data;
-    if (file_path) {
-      filePath.value = file_path;
-      message.info('上传已完成');
-      ws.value.close();
-    }
-  };
-  websocket.onerror = (e) => {
-    console.log('error: ', e);
-  };
-
-  ws.value = websocket;
-};
 
 const sendMessage = () => {
   const file = fileList.value[0].file;
@@ -77,12 +45,27 @@ const sendMessage = () => {
   }
 };
 
+const onopen = (e) => {
+  console.log('connected: ', e);
+  sendMessage();
+};
+
+const onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  const { file_path } = data;
+  if (file_path) {
+    filePath.value = file_path;
+    message.info('上传已完成');
+    ws.value.close();
+  }
+};
+
 const handleUpload = () => {
   if (!fileList.value.length) {
     message.info('请选择文件');
     return;
   }
-  openWebsocket();
+  ws.value = openWebsocket(loading, onopen, onmessage);
 };
 
 const handleCheck = () => {
@@ -103,9 +86,13 @@ const handleCheck = () => {
 };
 
 const handleDownload = () => {
-  const file = fileList.value[0].file;
-  const filename = file.name;
-  download(filename, response.value.data.path);
+  // const file = fileList.value[0].file;
+  // const filename = file.name;
+  // download(filename, response.value.data.path);
+  download(
+    'filename',
+    'http://10.22.148.91:8889/filesagsun-tools-server/db/011/2024/0521/21-31-01/admin/result/1.pdf'
+  );
 };
 </script>
 

@@ -6,7 +6,7 @@ import {
   AddOutline as AddIcon,
   TrashOutline as TrashIcon,
 } from '@vicons/ionicons5';
-import { lyla, SOCKET_URL } from '@/request';
+import { lyla, openWebsocket } from '@/request';
 import {
   INFO_NO_FILE,
   SHARD_SIZE,
@@ -64,39 +64,23 @@ const sendMessage = () => {
   }
 };
 
-const openWebsocket = () => {
-  loadingUpload.value = true;
-  const websocket = new WebSocket(SOCKET_URL);
+const onopen = (e) => {
+  console.log('connected: ', e);
+  reset();
+  sendMessage();
+};
 
-  websocket.onopen = (e) => {
-    console.log('connected: ', e);
-    reset();
-    sendMessage();
-  };
-
-  websocket.onclose = (e) => {
-    console.log('disconnected: ', e);
-    loadingUpload.value = false;
-  };
-
-  websocket.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    const { img_base64, total, current, file_path } = data;
-    if (img_base64) {
-      images.value.push({ src: img_base64, page: current + 1 });
-      if (current == total) {
-        console.log(current, total);
-        ws.value.close();
-      }
+const onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  const { img_base64, total, current, file_path } = data;
+  if (img_base64) {
+    images.value.push({ src: img_base64, page: current + 1 });
+    if (current == total) {
+      console.log(current, total);
+      ws.value.close();
     }
-    filePath.value = file_path;
-  };
-
-  websocket.onerror = (e) => {
-    console.log('error: ', e);
-  };
-
-  ws.value = websocket;
+  }
+  filePath.value = file_path;
 };
 
 const handleUpload = () => {
@@ -104,7 +88,7 @@ const handleUpload = () => {
     message.info(INFO_NO_FILE);
     return;
   }
-  openWebsocket();
+  ws.value = openWebsocket(loadingUpload, onopen, onmessage);
 };
 
 const handleOCR = () => {

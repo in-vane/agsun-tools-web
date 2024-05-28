@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { useMessage } from 'naive-ui';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
-import { lyla, SOCKET_URL } from '@/request';
+import { lyla, openWebsocket } from '@/request';
 import {
   SHARD_SIZE,
   INFO_NO_FILE,
@@ -49,35 +49,6 @@ const reset = () => {
   rect.value = [];
 };
 
-const openWebsocket = () => {
-  loadingUpload.value = true;
-  const websocket = new WebSocket(SOCKET_URL);
-
-  websocket.onopen = (e) => {
-    console.log('connected: ', e);
-    reset();
-    sendMessage();
-  };
-  websocket.onclose = (e) => {
-    console.log('disconnected: ', e);
-    loadingUpload.value = false;
-  };
-  websocket.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    const { img_base64, total, current, file_path } = data;
-    if (img_base64) {
-      images.value.push({ src: img_base64, page: current });
-      current == total && ws.value.close();
-    }
-    filePath.value = file_path;
-  };
-  websocket.onerror = (e) => {
-    console.log('error: ', e);
-  };
-
-  ws.value = websocket;
-};
-
 const sendMessage = () => {
   const file = fileList.value[0].file;
   const size = file.size;
@@ -104,12 +75,28 @@ const sendMessage = () => {
   }
 };
 
+const onopen = (e) => {
+  console.log('connected: ', e);
+  reset();
+  sendMessage();
+};
+
+const onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  const { img_base64, total, current, file_path } = data;
+  if (img_base64) {
+    images.value.push({ src: img_base64, page: current });
+    current == total && ws.value.close();
+  }
+  filePath.value = file_path;
+};
+
 const handleUpload = () => {
   if (!fileList.value.length) {
     message.info(INFO_NO_FILE);
     return;
   }
-  openWebsocket();
+  ws.value = openWebsocket(loadingUpload, onopen, onmessage);
 };
 
 const sendRect = () => {

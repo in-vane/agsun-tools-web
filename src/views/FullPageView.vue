@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
-import { lyla, SOCKET_URL } from '@/request';
+import { lyla, openWebsocket } from '@/request';
 import {
   SHARD_SIZE,
   PDF2IMG_MODE,
@@ -34,38 +34,6 @@ const loadingCompare = ref(false);
 
 const isComplete = () => filePath.value.every((_) => _);
 
-const openWebsocket = () => {
-  loadingUpload.value = true;
-  const websocket = new WebSocket(SOCKET_URL);
-
-  websocket.onopen = (e) => {
-    console.log('connected: ', e);
-    filePath.value = ['', ''];
-    sendMessage(0);
-    sendMessage(1);
-  };
-  websocket.onclose = (e) => {
-    console.log('disconnected: ', e);
-    loadingUpload.value = false;
-  };
-  websocket.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    const { file_path, options } = data;
-    if (file_path) {
-      filePath.value[options.index] = file_path;
-      if (isComplete()) {
-        message.info('上传已完成');
-        ws.value.close();
-      }
-    }
-  };
-  websocket.onerror = (e) => {
-    console.log('error: ', e);
-  };
-
-  ws.value = websocket;
-};
-
 const sendMessage = (index) => {
   const file = fileList.value[index].file;
   const size = file.size;
@@ -96,12 +64,31 @@ const sendMessage = (index) => {
   }
 };
 
+const onopen = (e) => {
+  console.log('connected: ', e);
+  filePath.value = ['', ''];
+  sendMessage(0);
+  sendMessage(1);
+};
+
+const onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  const { file_path, options } = data;
+  if (file_path) {
+    filePath.value[options.index] = file_path;
+    if (isComplete()) {
+      message.info('上传已完成');
+      ws.value.close();
+    }
+  }
+};
+
 const handleUpload = () => {
   if (fileList.value.length != 2) {
     message.info(INFO_NO_FILE);
     return;
   }
-  openWebsocket();
+  ws.value = openWebsocket(loadingUpload, onopen, onmessage);
 };
 
 const handleCompare = () => {

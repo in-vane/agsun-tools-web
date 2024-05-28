@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
-import { lyla, SOCKET_URL } from '@/request';
+import { lyla, openWebsocket } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import {
   SHARD_SIZE,
@@ -59,48 +59,6 @@ const reset = () => {
   images.value = [[], []];
 };
 
-const openWebsocket = () => {
-  const websocket = new WebSocket(SOCKET_URL);
-
-  websocket.onopen = (e) => {
-    console.log('connected: ', e);
-    if (active.value) {
-      const isError1 = isLimitError(0);
-      const isError2 = isLimitError(1);
-      if (isError1 || isError2) {
-        return;
-      }
-    }
-    loadingUpload.value = true;
-    reset();
-    sendMessage(0);
-    sendMessage(1);
-  };
-  websocket.onclose = (e) => {
-    console.log('disconnected: ', e);
-    loadingUpload.value = false;
-  };
-  websocket.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    const { total, current, img_base64, file_path, options } = data;
-    if (file_path) {
-    }
-    if (img_base64) {
-      images.value[options.index].push(img_base64);
-      filePath.value[options.index] = file_path;
-      progress.value[options.index] = `${current} / ${total}`;
-      completed.value[options.index] = current == total;
-      completed.value.every((_) => _) && ws.value.close();
-    }
-  };
-  websocket.onerror = (e) => {
-    console.log('error: ', e);
-    ws.value.close();
-  };
-
-  ws.value = websocket;
-};
-
 /**
  * @param {number} index 第i个文件
  */
@@ -138,6 +96,35 @@ const sendMessage = (index) => {
   }
 };
 
+const onopen = (e) => {
+  console.log('connected: ', e);
+  if (active.value) {
+    const isError1 = isLimitError(0);
+    const isError2 = isLimitError(1);
+    if (isError1 || isError2) {
+      return;
+    }
+  }
+  loadingUpload.value = true;
+  reset();
+  sendMessage(0);
+  sendMessage(1);
+};
+
+const onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  const { total, current, img_base64, file_path, options } = data;
+  if (file_path) {
+  }
+  if (img_base64) {
+    images.value[options.index].push(img_base64);
+    filePath.value[options.index] = file_path;
+    progress.value[options.index] = `${current} / ${total}`;
+    completed.value[options.index] = current == total;
+    completed.value.every((_) => _) && ws.value.close();
+  }
+};
+
 const handlePreviewClick = (selectedPDF, selectedImg) => {
   current.value[0] = selectedPDF;
   current.value[1] = selectedImg;
@@ -153,7 +140,7 @@ const handleUpload = () => {
     message.info('请选择2份文件');
     return;
   }
-  openWebsocket();
+  openWebsocket(loadingUpload, onopen, onmessage);
 };
 
 const handleCompare = () => {

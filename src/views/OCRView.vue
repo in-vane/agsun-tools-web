@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeUnmount, ref } from 'vue';
 import { useMessage } from 'naive-ui';
-import { lyla, SOCKET_URL } from '@/request';
+import { lyla, openWebsocket } from '@/request';
 import {
   SHARD_SIZE,
   INFO_NO_FILE,
@@ -45,36 +45,6 @@ const reset = () => {
   filePath.value = '';
 };
 
-const openWebsocket = () => {
-  const websocket = new WebSocket(SOCKET_URL);
-
-  websocket.onopen = (e) => {
-    console.log('connected: ', e);
-    loadingUpload.value = true;
-    reset();
-    sendMessage();
-  };
-  websocket.onclose = (e) => {
-    console.log('disconnected: ', e);
-    loadingUpload.value = false;
-  };
-  websocket.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    const { img_base64, total, current, file_path } = data;
-    if (img_base64) {
-      images.value.push(img_base64);
-      progress.value = total; // 总数，用以显示进度
-      current == total && ws.value.close();
-    }
-    filePath.value = file_path;
-  };
-  websocket.onerror = (e) => {
-    console.log('error: ', e);
-  };
-
-  ws.value = websocket;
-};
-
 const sendMessage = () => {
   const file = fileList.value[0].file;
   const size = file.size;
@@ -102,12 +72,30 @@ const sendMessage = () => {
   }
 };
 
+const onopen = (e) => {
+  console.log('connected: ', e);
+  loadingUpload.value = true;
+  reset();
+  sendMessage();
+};
+
+const onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  const { img_base64, total, current, file_path } = data;
+  if (img_base64) {
+    images.value.push(img_base64);
+    progress.value = total; // 总数，用以显示进度
+    current == total && ws.value.close();
+  }
+  filePath.value = file_path;
+};
+
 const handleUploadPDF = () => {
   if (!fileList.value.length) {
     message.info(INFO_NO_FILE);
     return;
   }
-  openWebsocket();
+  ws.value = openWebsocket(loadingUpload, onopen, onmessage);
 };
 
 const captureImage = () => {

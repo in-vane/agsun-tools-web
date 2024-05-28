@@ -39,11 +39,6 @@ const menuOptions = [
     key: 'fullPage',
     icon: renderIcon(IDoc),
   },
-  // {
-  //   label: renderLabel('/fullPageImage', '整页对比(区域模式)'),
-  //   key: 'fullPageImage',
-  //   icon: renderIcon(IDoc),
-  // },
   {
     label: renderLabel('/count', '零件计数'),
     key: 'count',
@@ -54,7 +49,6 @@ const menuOptions = [
     key: 'pageNo',
     icon: renderIcon(IBook),
   },
-  // { label: renderLabel('/table', '明细表'), key: 'table', icon: renderIcon(IList) },
   {
     label: renderLabel('/screw', '螺丝包'),
     key: 'screw',

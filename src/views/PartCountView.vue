@@ -6,7 +6,7 @@ import {
   AddOutline as AddIcon,
   TrashOutline as TrashIcon,
 } from '@vicons/ionicons5';
-import { lyla, SOCKET_URL } from '@/request';
+import { lyla, openWebsocket } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import {
   SHARD_SIZE,
@@ -84,34 +84,6 @@ const reset = () => {
   cropend.value = '';
 };
 
-const openWebsocket = () => {
-  loadingUpload.value = true;
-  const websocket = new WebSocket(SOCKET_URL);
-
-  websocket.onopen = (e) => {
-    console.log('connected: ', e);
-    reset();
-    sendMessage();
-  };
-  websocket.onclose = (e) => {
-    console.log('disconnected: ', e);
-    loadingUpload.value = false;
-  };
-  websocket.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    const { img_base64, total, current } = data;
-    if (img_base64) {
-      images.value.push({ src: img_base64, page: current });
-      current == total && ws.value.close();
-    }
-  };
-  websocket.onerror = (e) => {
-    console.log('error: ', e);
-  };
-
-  ws.value = websocket;
-};
-
 const sendMessage = () => {
   const file = fileList.value[0].file;
   const size = file.size;
@@ -138,6 +110,21 @@ const sendMessage = () => {
   }
 };
 
+const onopen = (e) => {
+  console.log('connected: ', e);
+  reset();
+  sendMessage();
+};
+
+const onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  const { img_base64, total, current } = data;
+  if (img_base64) {
+    images.value.push({ src: img_base64, page: current });
+    current == total && ws.value.close();
+  }
+};
+
 const handleGetCrop = () => {
   const base64 = cropper.getDataURL();
   const data = cropper.getData(true);
@@ -151,7 +138,7 @@ const handleUpload = () => {
     message.info(INFO_NO_FILE);
     return;
   }
-  openWebsocket();
+  ws.value = openWebsocket(loadingUpload, onopen, onmessage);
 };
 
 const handlePartCount = () => {
