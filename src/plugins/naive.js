@@ -50,6 +50,10 @@ import {
   NScrollbar,
   NPopselect,
   NFlex,
+  NPagination,
+  NDatePicker,
+  NModal,
+  NCard,
 } from 'naive-ui';
 
 // https://www.naiveui.com/en-US/os-theme/docs/import-on-demand
@@ -105,6 +109,10 @@ const naive = create({
     NScrollbar,
     NPopselect,
     NFlex,
+    NPagination,
+    NDatePicker,
+    NModal,
+    NCard,
   ],
 });
 

@@ -13,7 +13,8 @@ import {
   CogOutline as ICog,
   CameraOutline as ICamera,
   LogOutOutline as ILogout,
-  PencilOutline as ILine
+  PencilOutline as ILine,
+  AlbumsOutline as IAlbums,
 } from '@vicons/ionicons5';
 import { renderIcon } from '@/utils';
 import { useUserStore } from '@/store/modules/user';
@@ -22,7 +23,7 @@ import agsun from '@/assets/agsun.jpeg';
 
 const userStore = useUserStore();
 const userInfo = userStore.getUserInfo || {};
-console.log(userInfo)
+console.log(userInfo);
 
 const renderLabel = (path, label) => () =>
   h(RouterLink, { to: { path } }, { default: () => label });
@@ -78,6 +79,11 @@ const menuOptions = [
     label: renderLabel('/line', '线段检测'),
     key: 'line',
     icon: renderIcon(ILine),
+  },
+  {
+    label: renderLabel('/history', '历史检索'),
+    key: 'history',
+    icon: renderIcon(IAlbums),
   },
 ];
 
