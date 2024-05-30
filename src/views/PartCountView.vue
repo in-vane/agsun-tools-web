@@ -141,6 +141,7 @@ const handlePartCount = () => {
   const file = fileList.value[0].file;
   const params = {
     filename: file.name,
+    filePath: filePath.value,
     rect: rect.value,
     page_explore: explorePage.value,
     page_table: tablePage.value,
@@ -169,6 +170,7 @@ const handlePartCountOCR = () => {
   const page_table = tablePages.value.slice().sort((a, b) => a - b);
   const params = {
     filename: file.name,
+    filePath: filePath.value,
     rect: rect.value,
     page_explore: explorePage.value,
     page_table: page_table,
