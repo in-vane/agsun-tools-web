@@ -2,14 +2,17 @@
 import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
-import { lyla } from '@/request';
+import { lyla, openWebsocket } from '@/request';
 import { INFO_NO_FILE } from '@/config/const.config';
-import { onlyAllowNumber } from '@/utils';
+import { onlyAllowNumber, checkFileUploaded, uploadFile } from '@/utils';
 
 const message = useMessage();
 const upload = ref(null);
 
+const ws = ref([null, null]);
+const loadingUpload = ref(false);
 const fileList = ref([]);
+const filePath = ref(['', '']);
 
 const mode = ref(0);
 const sheet = ref('1');
@@ -28,20 +31,50 @@ const response = ref({
   msg: '',
 });
 
-const handleUpload = () => {
+const onmessage = (e, i) => {
+  const data = JSON.parse(e.data);
+  const { file_path } = data;
+  if (file_path) {
+    filePath.value[i] = file_path;
+    message.info(`文件${i + 1}已上传`);
+    ws.value[i].close();
+  }
+};
+
+const onopen = (i) => {
+  uploadFile(ws.value[i], fileList.value[i].file);
+};
+
+const handleUpload = async () => {
   if (!fileList.value.length) {
     message.info(INFO_NO_FILE);
     return;
   }
-  loading.value = true;
-  const formData = new FormData();
-  for (const item of fileList.value) {
-    formData.append(item.file.name, item.file);
+  let record = null;
+  for (let i = 0; i < 2; i++) {
+    record = await checkFileUploaded(fileList.value[i].file);
+    if (record) {
+      filePath.value[i] = record.file_path;
+      message.info(`文件${i + 1}已上传`);
+    } else {
+      ws.value[i] = openWebsocket(
+        loadingUpload,
+        () => onopen(i),
+        (e) => onmessage(e, i)
+      );
+    }
   }
-  formData.append('mode', mode.value);
-  formData.append('sheet', n);
+};
+
+const compare = () => {
+  loading.value = true;
+  const params = {
+    mode: mode.value,
+    sheet: n,
+    filePath: filePath.value,
+  };
   lyla
-    .post('/ce', { body: formData })
+    .post('/ce', { json: params })
     .then((res) => {
       console.log(res);
       response.value = res.json;
@@ -91,9 +124,8 @@ const handleUpload = () => {
             />
             <n-input-group-label>张Sheet表</n-input-group-label>
           </n-input-group>
-          <n-button type="primary" ghost @click="handleUpload">
-            开始对比
-          </n-button>
+          <n-button type="primary" ghost @click="handleUpload"> 上传 </n-button>
+          <n-button type="primary" ghost @click="compare"> 开始对比 </n-button>
         </n-space>
       </n-space>
     </n-spin>

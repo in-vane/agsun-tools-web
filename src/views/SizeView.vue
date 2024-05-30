@@ -71,6 +71,7 @@ const checkSize = () => {
     width: size.value.width || -1,
     height: size.value.height || -1,
     radius: size.value.radius || -1,
+    filePath: filePath.value,
   };
   lyla
     .post('/size', { json: params })
