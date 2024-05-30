@@ -3,8 +3,7 @@ import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
-import { SHARD_SIZE, WEBSOCKET_TYPE } from '@/config/const.config.js';
-import { download } from '@/utils';
+import { download, checkFileUploaded, uploadFile } from '@/utils';
 
 const message = useMessage();
 const upload = ref(null);
@@ -20,36 +19,7 @@ const response = ref({
 
 const loading = ref(false);
 
-const sendMessage = () => {
-  const file = fileList.value[0].file;
-  const size = file.size;
-  const total = Math.ceil(size / SHARD_SIZE);
-  const params = {
-    type: WEBSOCKET_TYPE.UPLOAD,
-    fileName: file.name,
-    total,
-  };
-  for (let i = 0; i < total; i++) {
-    const start = i * SHARD_SIZE;
-    const end = Math.min(size, start + SHARD_SIZE);
-    const fileClip = file.slice(start, end);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      Object.assign(params, {
-        file: reader.result,
-        current: i + 1,
-      });
-      ws.value.send(JSON.stringify(params));
-    };
-    reader.readAsDataURL(fileClip);
-  }
-};
-
-const onopen = (e) => {
-  console.log('connected: ', e);
-  sendMessage();
-};
-
+// ==================================================
 const onmessage = (e) => {
   const data = JSON.parse(e.data);
   const { file_path } = data;
@@ -60,12 +30,22 @@ const onmessage = (e) => {
   }
 };
 
-const handleUpload = () => {
+const onopen = (e) => {
+  uploadFile(ws.value, fileList.value[0].file);
+};
+
+const handleUpload = async () => {
   if (!fileList.value.length) {
     message.info('请选择文件');
     return;
   }
-  ws.value = openWebsocket(loading, onopen, onmessage);
+  const record = await checkFileUploaded(fileList.value[0].file);
+  if (record) {
+    filePath.value = record.file_path;
+    message.success('已上传');
+  } else {
+    ws.value = openWebsocket(loading, onopen, onmessage);
+  }
 };
 
 const handleCheck = () => {
@@ -86,13 +66,9 @@ const handleCheck = () => {
 };
 
 const handleDownload = () => {
-  // const file = fileList.value[0].file;
-  // const filename = file.name;
-  // download(filename, response.value.data.path);
-  download(
-    'filename',
-    'http://10.22.148.91:8889/filesagsun-tools-server/db/011/2024/0521/21-31-01/admin/result/1.pdf'
-  );
+  const file = fileList.value[0].file;
+  const filename = file.name;
+  download(filename, response.value.data.path);
 };
 </script>
 

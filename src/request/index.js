@@ -60,14 +60,17 @@ const openWebsocket = (loading, onopen, onmessage) => {
     const token = storage.get('ACCESS-TOKEN', '');
     const websocket = new WebSocket(`${SOCKET_URL}?token=${token}`);
 
-    websocket.onopen = onopen;
+    websocket.onopen = (e) => {
+      console.log('connected: ', e);
+      onopen();
+    };
 
     websocket.onclose = (e) => {
       console.log('disconnected: ', e);
       loading.value = false;
     };
 
-    websocket.onmessage = onmessage;
+    websocket.onmessage = onmessage
 
     websocket.onerror = (e) => {
       console.log('error: ', e);

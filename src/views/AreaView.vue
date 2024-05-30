@@ -4,18 +4,17 @@ import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
+import { WEBSOCKET_TYPE, CROP_BOX_STYLE } from '@/config/const.config';
 import {
-  SHARD_SIZE,
-  PDF2IMG_MODE,
-  WEBSOCKET_TYPE,
-  CROP_BOX_STYLE,
-} from '@/config/const.config';
-import { onlyAllowNumber } from '@/utils';
+  onlyAllowNumber,
+  checkFileUploaded,
+  uploadFile,
+  getImages,
+} from '@/utils';
 
 const message = useMessage();
 const upload = ref(null);
-const ws = ref(null);
-const completed = ref([false, false]);
+const ws = ref([null, null]);
 
 const fileList = ref([]);
 const filePath = ref(['', '']);
@@ -24,7 +23,6 @@ const limit = ref([
   { start: '', end: '' },
   { start: '', end: '' },
 ]);
-const progress = ref(['', '']);
 const current = ref([0, 0]);
 const images = ref([[], []]);
 const cropend = ref([]);
@@ -33,95 +31,61 @@ const response = ref({ result: '' });
 const loadingUpload = ref(false);
 const loadingCompare = ref(false);
 
-/**
- * @param {number} i 第i个文件的limit参数
- */
-const isLimitError = (i) => {
-  const params = limit.value[i];
-  let start = parseInt(params.start);
-  let end = parseInt(params.end);
-  if (Number.isNaN(start) || Number.isNaN(end)) {
-    message.error('请正确填写起止页');
-    return true;
-  }
-  if (end < start) {
-    message.error('起始页不能大于结束页');
-    return true;
-  }
-
-  return false;
-};
-
-const reset = () => {
-  completed.value = [false, false];
-  progress.value = ['', ''];
-  current.value = [0, 0];
-  images.value = [[], []];
-};
-
-/**
- * @param {number} index 第i个文件
- */
-const sendMessage = (index) => {
-  const file = fileList.value[index].file;
-  const size = file.size;
-  const total = Math.ceil(size / SHARD_SIZE);
-  const params = {
-    type: WEBSOCKET_TYPE.PDF2IMG,
-    fileName: file.name,
-    total,
-    options: {
-      mode: PDF2IMG_MODE.NORMAL,
-      index,
-    },
-  };
+const genOptions = (i) => {
+  const options = {};
   if (active.value) {
-    const { start, end } = limit.value[index];
-    Object.assign(params.options, { start, end });
+    const { start, end } = limit.value[i];
+    Object.assign(options, { start, end });
   }
-
-  for (let i = 0; i < total; i++) {
-    const start = i * SHARD_SIZE;
-    const end = Math.min(size, start + SHARD_SIZE);
-    const fileClip = file.slice(start, end);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      Object.assign(params, {
-        file: reader.result,
-        current: i + 1,
-      });
-      ws.value.send(JSON.stringify(params));
-    };
-    reader.readAsDataURL(fileClip);
-  }
+  return options;
 };
 
-const onopen = (e) => {
-  console.log('connected: ', e);
-  if (active.value) {
-    const isError1 = isLimitError(0);
-    const isError2 = isLimitError(1);
-    if (isError1 || isError2) {
-      return;
-    }
-  }
-  loadingUpload.value = true;
-  reset();
-  sendMessage(0);
-  sendMessage(1);
-};
-
-const onmessage = (e) => {
+const onmessage = (e, i) => {
   const data = JSON.parse(e.data);
-  const { total, current, img_base64, file_path, options } = data;
+  const { file_path, img_base64, complete } = data;
   if (file_path) {
+    filePath.value[i] = file_path;
+    const options = genOptions(i);
+    getImages(ws.value[i], file_path, options);
   }
   if (img_base64) {
-    images.value[options.index].push(img_base64);
-    filePath.value[options.index] = file_path;
-    progress.value[options.index] = `${current} / ${total}`;
-    completed.value[options.index] = current == total;
-    completed.value.every((_) => _) && ws.value.close();
+    images.value[i].push(img_base64);
+  }
+  if (complete) {
+    ws.value[i].close();
+  }
+};
+
+const onopen = (type, i) => {
+  current.value[i] = 0;
+  images.value[i] = [];
+  if (type == WEBSOCKET_TYPE.UPLOAD) {
+    uploadFile(ws.value[i], fileList.value[i].file);
+  }
+  if (type == WEBSOCKET_TYPE.PDF2IMG) {
+    const options = genOptions(i);
+    getImages(ws.value[i], filePath.value[i], options);
+  }
+};
+
+const handleUpload = async () => {
+  if (fileList.value.length != 2) {
+    message.info('请选择2份文件');
+    return;
+  }
+  let record = null;
+  let type = WEBSOCKET_TYPE.UPLOAD;
+  for (let i = 0; i < 2; i++) {
+    record = await checkFileUploaded(fileList.value[i].file);
+    if (record) {
+      filePath.value[i] = record.file_path;
+      type = WEBSOCKET_TYPE.PDF2IMG;
+    }
+    ws.value[i] = openWebsocket(
+      loadingUpload,
+      () => onopen(type, i),
+      (e) => onmessage(e, i)
+    );
   }
 };
 
@@ -133,14 +97,6 @@ const handlePreviewClick = (selectedPDF, selectedImg) => {
 const handleGetCrop = () => {
   const base64 = cropper.getDataURL();
   cropend.value[current.value[0]] = base64;
-};
-
-const handleUpload = () => {
-  if (fileList.value.length != 2) {
-    message.info('请选择2份文件');
-    return;
-  }
-  openWebsocket(loadingUpload, onopen, onmessage);
 };
 
 const handleCompare = () => {
@@ -166,11 +122,6 @@ const handleCompare = () => {
       loadingCompare.value = false;
     });
 };
-
-// const handleSaveResult = () => {
-//   const data = response.value.split(',')[1];
-//   handleDownload(data, 'img');
-// };
 
 const handleKeyDownEsc = (e) => {
   if (e.keyCode == 27) {
@@ -276,7 +227,7 @@ onUnmounted(() => {
     <n-spin :show="loadingUpload">
       <div class="box-divider">
         <div class="box-divider-item">
-          <n-h3 prefix="bar"> 文件1中的图像预览 {{ progress[0] }} </n-h3>
+          <n-h3 prefix="bar"> 文件1中的图像预览 </n-h3>
           <div class="scroll-box">
             <n-scrollbar class="n-scrollbar" x-scrollable>
               <div class="preview-box">
@@ -303,7 +254,7 @@ onUnmounted(() => {
           </div>
         </div>
         <div class="box-divider-item">
-          <n-h3 prefix="bar">文件2中的图像预览 {{ progress[1] }}</n-h3>
+          <n-h3 prefix="bar">文件2中的图像预览 </n-h3>
           <div class="scroll-box">
             <n-scrollbar x-scrollable>
               <div class="preview-box">

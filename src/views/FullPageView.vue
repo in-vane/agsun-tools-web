@@ -3,22 +3,20 @@ import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
-import {
-  SHARD_SIZE,
-  PDF2IMG_MODE,
-  INFO_NO_FILE,
-  WEBSOCKET_TYPE,
-} from '@/config/const.config';
-import { onlyAllowNumber } from '@/utils';
+import { INFO_NO_FILE } from '@/config/const.config';
+import { onlyAllowNumber, checkFileUploaded, uploadFile } from '@/utils';
 
 const message = useMessage();
 const upload = ref(null);
-const ws = ref(null);
+
+const ws = ref([null, null]);
+const loadingUpload = ref(false);
 
 const fileList = ref([]);
 const filePath = ref(['', '']);
 const active = ref(false);
 const start = ref(['', '']);
+const loadingCompare = ref(false);
 const response = ref({
   code: 0,
   msg: '',
@@ -29,73 +27,42 @@ const response = ref({
   },
 });
 
-const loadingUpload = ref(false);
-const loadingCompare = ref(false);
-
-const isComplete = () => filePath.value.every((_) => _);
-
-const sendMessage = (index) => {
-  const file = fileList.value[index].file;
-  const size = file.size;
-  const total = Math.ceil(size / SHARD_SIZE);
-  const params = {
-    type: WEBSOCKET_TYPE.UPLOAD,
-    fileName: file.name,
-    total,
-    options: {
-      mode: PDF2IMG_MODE.VECTOR,
-      index,
-    },
-  };
-
-  for (let i = 0; i < total; i++) {
-    const start = i * SHARD_SIZE;
-    const end = Math.min(size, start + SHARD_SIZE);
-    const fileClip = file.slice(start, end);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      Object.assign(params, {
-        file: reader.result,
-        current: i + 1,
-      });
-      ws.value.send(JSON.stringify(params));
-    };
-    reader.readAsDataURL(fileClip);
-  }
-};
-
-const onopen = (e) => {
-  console.log('connected: ', e);
-  filePath.value = ['', ''];
-  sendMessage(0);
-  sendMessage(1);
-};
-
-const onmessage = (e) => {
+const onmessage = (e, i) => {
   const data = JSON.parse(e.data);
-  const { file_path, options } = data;
+  const { file_path } = data;
   if (file_path) {
-    filePath.value[options.index] = file_path;
-    if (isComplete()) {
-      message.info('上传已完成');
-      ws.value.close();
-    }
+    filePath.value[i] = file_path;
+    message.info(`文件${i + 1}已上传`);
+    ws.value[i].close();
   }
 };
 
-const handleUpload = () => {
+const onopen = (i) => {
+  uploadFile(ws.value[i], fileList.value[i].file);
+};
+
+const handleUpload = async () => {
   if (fileList.value.length != 2) {
     message.info(INFO_NO_FILE);
     return;
   }
-  ws.value = openWebsocket(loadingUpload, onopen, onmessage);
+  let record = null;
+  for (let i = 0; i < 2; i++) {
+    record = await checkFileUploaded(fileList.value[i].file);
+    if (record) {
+      filePath.value[i] = record.file_path;
+      message.info(`文件${i + 1}已上传`);
+    } else {
+      ws.value[i] = openWebsocket(
+        loadingUpload,
+        () => onopen(i),
+        (e) => onmessage(e, i)
+      );
+    }
+  }
 };
 
 const handleCompare = () => {
-  if (!isComplete()) {
-    message.info('请先上传文件');
-    return;
-  }
   loadingCompare.value = true;
   const params = {
     file_path_1: filePath.value[0],

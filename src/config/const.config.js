@@ -4,8 +4,8 @@ export const INFO_NO_FILE = '请选择文件';
 export const MESSAGE_ERROR_PARAMS = '请输入正确的参数';
 
 export const WEBSOCKET_TYPE = {
-  PDF2IMG: 'pdf2img',
   UPLOAD: 'upload',
+  PDF2IMG: 'pdf2img',
 };
 export const SHARD_SIZE = 1024 * 1024; // 文件分片大小: 1MB
 export const PDF2IMG_MODE = {

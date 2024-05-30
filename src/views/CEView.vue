@@ -33,8 +33,6 @@ const handleUpload = () => {
     message.info(INFO_NO_FILE);
     return;
   }
-  let n = parseInt(sheet.value);
-  Number.isNaN(n) && (n = 1);
   loading.value = true;
   const formData = new FormData();
   for (const item of fileList.value) {

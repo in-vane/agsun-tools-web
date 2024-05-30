@@ -2,9 +2,9 @@
 import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
-import { lyla } from '@/request';
-import { INFO_NO_FILE } from '@/config/const.config.js';
-import { onlyAllowNumber } from '@/utils';
+import { lyla, openWebsocket } from '@/request';
+import { INFO_NO_FILE } from '@/config/const.config';
+import { onlyAllowNumber, checkFileUploaded, uploadFile } from '@/utils';
 
 const upload = ref(null);
 const message = useMessage();
@@ -15,10 +15,16 @@ const OPTIONS = [
   { label: '矩形模式', value: MODE_RECT },
   { label: '圆形模式', value: MODE_CIR },
 ];
+
+const ws = ref(null);
 const fileList = ref([]);
+const filePath = ref('');
+const loadingUpload = ref(false);
+
 const mode = ref(MODE_RECT);
 const active = ref(false);
 const size = ref({ width: '', height: '', radius: '' });
+const loading = ref(false);
 const response = ref({
   code: null,
   data: {
@@ -28,25 +34,46 @@ const response = ref({
   msg: '',
 });
 
-const loading = ref(false);
+// ==================================================
+const onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  const { file_path } = data;
+  if (file_path) {
+    filePath.value = file_path;
+    message.info('上传已完成');
+    ws.value.close();
+  }
+};
 
-const handleUpload = () => {
+const onopen = () => {
+  uploadFile(ws.value, fileList.value[0].file);
+};
+
+const handleUpload = async () => {
   if (!fileList.value.length) {
     message.info(INFO_NO_FILE);
     return;
   }
-  loading.value = true;
-  const formData = new FormData();
-  formData.append('file', fileList.value[0].file);
-  formData.append('mode', mode.value);
-  formData.append('active', active.value ? 1 : 0);
-  if (active.value) {
-    formData.append('width', size.value.width || -1);
-    formData.append('height', size.value.height || -1);
-    formData.append('radius', size.value.radius || -1);
+  const record = await checkFileUploaded(fileList.value[0].file);
+  if (record) {
+    filePath.value = record.file_path;
+    message.success('已上传');
+  } else {
+    ws.value = openWebsocket(loadingUpload, onopen, onmessage);
   }
+};
+
+const checkSize = () => {
+  loading.value = true;
+  const params = {
+    mode: mode.value,
+    active: active.value ? 1 : 0,
+    width: size.value.width || -1,
+    height: size.value.height || -1,
+    radius: size.value.radius || -1,
+  };
   lyla
-    .post('/size', { body: formData })
+    .post('/size', { json: params })
     .then((res) => {
       console.log(res);
       response.value = res.json;
@@ -117,6 +144,9 @@ const handleUpload = () => {
             />
           </n-input-group>
           <n-button type="primary" ghost @click="handleUpload">
+            上传文件
+          </n-button>
+          <n-button type="primary" ghost @click="checkSize">
             开始检查
           </n-button>
         </n-space>

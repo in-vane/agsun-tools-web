@@ -2,12 +2,8 @@
 import { onBeforeUnmount, ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { lyla, openWebsocket } from '@/request';
-import {
-  SHARD_SIZE,
-  INFO_NO_FILE,
-  PDF2IMG_MODE,
-  WEBSOCKET_TYPE,
-} from '@/config/const.config';
+import { INFO_NO_FILE, WEBSOCKET_TYPE } from '@/config/const.config';
+import { checkFileUploaded, uploadFile, getImages } from '@/utils';
 
 const message = useMessage();
 
@@ -16,7 +12,6 @@ const loadingUpload = ref(false);
 const fileList = ref([]);
 const filePath = ref('');
 const images = ref([]);
-const progress = ref(0);
 const current = ref(0);
 const cameras = ref([]);
 
@@ -38,64 +33,46 @@ const loadingCapture = ref(false);
 const mediaTrack = ref(null);
 const response = ref({ error: true, result: [] });
 
-// ==========
-const reset = () => {
-  current.value = 0;
-  images.value = [];
-  filePath.value = '';
-};
-
-const sendMessage = () => {
-  const file = fileList.value[0].file;
-  const size = file.size;
-  const total = Math.ceil(size / SHARD_SIZE);
-  const params = {
-    type: WEBSOCKET_TYPE.PDF2IMG,
-    fileName: file.name,
-    total,
-    options: { mode: PDF2IMG_MODE.NORMAL },
-  };
-
-  for (let i = 0; i < total; i++) {
-    const start = i * SHARD_SIZE;
-    const end = Math.min(size, start + SHARD_SIZE);
-    const fileClip = file.slice(start, end);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      Object.assign(params, {
-        file: reader.result,
-        current: i + 1,
-      });
-      ws.value.send(JSON.stringify(params));
-    };
-    reader.readAsDataURL(fileClip);
-  }
-};
-
-const onopen = (e) => {
-  console.log('connected: ', e);
-  loadingUpload.value = true;
-  reset();
-  sendMessage();
-};
+// ==================================================
 
 const onmessage = (e) => {
   const data = JSON.parse(e.data);
-  const { img_base64, total, current, file_path } = data;
+  const { file_path, img_base64, complete } = data;
+  if (file_path) {
+    filePath.value = file_path;
+    getImages(ws.value, file_path);
+  }
   if (img_base64) {
     images.value.push(img_base64);
-    progress.value = total; // 总数，用以显示进度
-    current == total && ws.value.close();
   }
-  filePath.value = file_path;
+  if (complete) {
+    ws.value.close();
+  }
 };
 
-const handleUploadPDF = () => {
+const onopen = (type) => {
+  current.value = 0;
+  images.value = [];
+  if (type == WEBSOCKET_TYPE.UPLOAD) {
+    uploadFile(ws.value, fileList.value[0].file);
+  }
+  if (type == WEBSOCKET_TYPE.PDF2IMG) {
+    getImages(ws.value, filePath.value);
+  }
+};
+
+const handleUploadPDF = async () => {
   if (!fileList.value.length) {
     message.info(INFO_NO_FILE);
     return;
   }
-  ws.value = openWebsocket(loadingUpload, onopen, onmessage);
+  let type = WEBSOCKET_TYPE.UPLOAD;
+  const record = await checkFileUploaded(fileList.value[0].file);
+  if (record) {
+    filePath.value = record.file_path;
+    type = WEBSOCKET_TYPE.PDF2IMG;
+  }
+  ws.value = openWebsocket(loadingUpload, () => onopen(type), onmessage);
 };
 
 const captureImage = () => {
@@ -190,11 +167,7 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <!-- upload -->
-    <n-spin
-      :show="loadingUpload"
-      content-class="upload-spin-content"
-      :description="`${images.length} / ${progress}`"
-    >
+    <n-spin :show="loadingUpload" content-class="upload-spin-content">
       <n-h3 prefix="bar">1. 上传PDF</n-h3>
       <n-upload
         :max="1"

@@ -1,29 +1,34 @@
 import { h } from 'vue';
-import { NIcon, NTag } from 'naive-ui';
+import { NIcon } from 'naive-ui';
 import SparkMD5 from 'spark-md5';
-import { lyla, SOCKET_URL } from '@/request';
-import { SHARD_SIZE, WEBSOCKET_TYPE } from '@/config/const.config';
+import { lyla } from '@/request';
+import {
+  PDF2IMG_MODE,
+  SHARD_SIZE,
+  WEBSOCKET_TYPE,
+} from '@/config/const.config';
 
+/**
+ * input只允许数字
+ * @param {*} value
+ * @returns
+ */
 export const onlyAllowNumber = (value) => !value || /^\d+$/.test(value);
 
+/**
+ * 渲染icon
+ * @param {*} icon
+ * @returns
+ */
 export function renderIcon(icon) {
   return () => h(NIcon, null, { default: () => h(icon) });
 }
 
-const newTagColors = { color: '#f90', textColor: '#fff', borderColor: '#f90' };
-export function renderNew(
-  type = 'warning',
-  text = 'New',
-  color = newTagColors
-) {
-  return () =>
-    h(
-      NTag,
-      { type, round: true, size: 'small', color },
-      { default: () => text }
-    );
-}
-
+/**
+ * 下载文件
+ * @param {*} filename
+ * @param {*} url
+ */
 export const download = (filename, url) => {
   let a = document.createElement('a');
   a.style = 'display: none'; // 创建一个隐藏的a标签
@@ -34,22 +39,80 @@ export const download = (filename, url) => {
   document.body.removeChild(a);
 };
 
-export const isFileUploaded = (file) =>
+/**
+ * 检查数组是否全true
+ * @param {*} arr
+ * @returns {Boolean}
+ */
+export const checkAllTrue = (arr) => arr.every((element) => element === true);
+
+/**
+ * 生成文件的md5
+ * @param {*} file
+ * @returns
+ */
+export const getMD5 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = (e) => {
       const arrayBuffer = reader.result;
       const md5 = SparkMD5.ArrayBuffer.hash(arrayBuffer);
-      const params = { md5 };
-      lyla
-        .post('/isFileUploaded', { json: params })
-        .then((res) => {
-          console.log(res);
-          let result = res.json.data?.result;
-          result = Array.isArray(result) ? result : [];
-          resolve(result);
-        })
-        .catch((err) => reject(err));
+      console.log(md5);
+      resolve(md5);
+    };
+    reader.onerror = (e) => {
+      reject(e);
     };
     reader.readAsArrayBuffer(file);
   });
+
+/**
+ * 检查文件是否已上传
+ * @param {*} file
+ * @returns {Boolean}
+ */
+export const checkFileUploaded = async (file) => {
+  const md5 = await getMD5(file);
+  const response = await lyla.post('/isFileUploaded', { json: { md5 } });
+  let record = response.json.data?.result;
+  console.log(record);
+  return record;
+};
+
+/**
+ * 分片上传文件
+ * @param {*} ws websocket实例
+ * @param {*} file 要上传的文件
+ */
+export const uploadFile = (ws, file) => {
+  const size = file.size;
+  const total = Math.ceil(size / SHARD_SIZE);
+  const params = {
+    type: WEBSOCKET_TYPE.UPLOAD,
+    fileName: file.name,
+    total,
+  };
+  for (let i = 0; i < total; i++) {
+    const start = i * SHARD_SIZE;
+    const end = Math.min(size, start + SHARD_SIZE);
+    const fileClip = file.slice(start, end);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      Object.assign(params, {
+        current: i + 1,
+        file: reader.result,
+      });
+      ws.send(JSON.stringify(params));
+    };
+    reader.readAsDataURL(fileClip);
+  }
+};
+
+export const getImages = (ws, filePath, options = {}) => {
+  const params = {
+    type: WEBSOCKET_TYPE.PDF2IMG,
+    filePath,
+    options,
+  };
+  ws.send(JSON.stringify(params));
+};
