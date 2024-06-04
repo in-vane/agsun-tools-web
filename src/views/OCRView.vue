@@ -185,7 +185,7 @@ onBeforeUnmount(() => {
       >
         开始转换
       </n-button>
-      <n-scrollbar x-scrollable>
+      <n-scrollbar x-scrollable trigger="none">
         <div class="preview-box">
           <div class="preview-item" v-for="(img, i) in images" :key="i">
             <n-badge :value="i + 1" :color="current == i ? '#18a058' : 'gray'">

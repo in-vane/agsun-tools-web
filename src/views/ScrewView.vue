@@ -272,7 +272,7 @@ const options = {
     <n-spin :show="loadingOCR">
       <n-h3 prefix="bar">2. 选取螺丝表</n-h3>
       <div class="scroll-box">
-        <n-scrollbar class="n-scrollbar" x-scrollable>
+        <n-scrollbar class="n-scrollbar" x-scrollable trigger="none">
           <div class="preview-box">
             <div class="preview-item" v-for="(img, i) in images" :key="i">
               <n-badge

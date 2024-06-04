@@ -206,7 +206,7 @@ const OCRColumns = [
       <n-h3 prefix="bar">2. 选择目录页</n-h3>
       <n-space vertical>
         <div class="scroll-box">
-          <n-scrollbar class="n-scrollbar" x-scrollable>
+          <n-scrollbar class="n-scrollbar" x-scrollable trigger="none">
             <div class="preview-box">
               <div class="preview-item" v-for="(img, i) in images" :key="i">
                 <n-badge

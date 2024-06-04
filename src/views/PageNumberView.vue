@@ -159,7 +159,7 @@ const options = {
         <n-button type="primary" ghost @click="sendRect"> 开始任务 </n-button>
       </n-space>
       <div class="scroll-box">
-        <n-scrollbar class="n-scrollbar" x-scrollable>
+        <n-scrollbar class="n-scrollbar" x-scrollable trigger="none">
           <div class="preview-box">
             <div class="preview-item" v-for="(img, i) in images" :key="i">
               <n-badge

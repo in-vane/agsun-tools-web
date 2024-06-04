@@ -229,7 +229,7 @@ onUnmounted(() => {
         <div class="box-divider-item">
           <n-h3 prefix="bar"> 文件1中的图像预览 </n-h3>
           <div class="scroll-box">
-            <n-scrollbar class="n-scrollbar" x-scrollable>
+            <n-scrollbar class="n-scrollbar" x-scrollable trigger="none">
               <div class="preview-box">
                 <n-image
                   v-for="(img, i) in images[0]"
@@ -256,7 +256,7 @@ onUnmounted(() => {
         <div class="box-divider-item">
           <n-h3 prefix="bar">文件2中的图像预览 </n-h3>
           <div class="scroll-box">
-            <n-scrollbar x-scrollable>
+            <n-scrollbar x-scrollable trigger="none">
               <div class="preview-box">
                 <n-image
                   v-for="(img, i) in images[1]"
