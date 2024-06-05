@@ -23,10 +23,10 @@ const response = ref([]);
 const showModal = ref(false);
 const images = ref([]);
 
-const search = (page) => {
+const searchHistory = (page) => {
   loading.value = true;
   lyla
-    .post('/history/search', { json: formRef.value.model })
+    .post('/history/searchHistory', { json: formRef.value.model })
     .then((res) => {
       console.log(res);
       response.value = Array.isArray(res.json.data) ? res.json.data : [];
@@ -40,14 +40,14 @@ const handleValidateClick = (e) => {
   console.log(formRef.value.model);
   formRef.value?.validate((errors) => {
     if (!errors) {
-      search();
+      searchHistory();
     } else {
       console.log(errors);
     }
   });
 };
 
-const handleFiles = () => {
+const searchFiles = () => {
   console.log(formRef.value.model);
   formRef.value?.validate((errors) => {
     disabled.value = errors;
@@ -66,6 +66,7 @@ const handleFiles = () => {
             label: row.file_name,
             value: file_path,
           }));
+          console.log(options);
           fileOptions.value = options;
         })
         .catch((err) => {});
@@ -124,21 +125,21 @@ const columns = [
   },
 ];
 
-watch(
-  () => [
-    formValue.value.username,
-    formValue.value.datetime,
-    formValue.value.type_id,
-  ],
-  (newValues, oldValues) => {
-    handleFiles();
-  },
-  { deep: true }
-);
+// watch(
+//   () => [
+//     formValue.value.username,
+//     formValue.value.datetime,
+//     formValue.value.type_id,
+//   ],
+//   (newValues, oldValues) => {
+//     searchFiles();
+//   },
+//   { deep: true }
+// );
 
-onMounted(() => {
-  handleFiles();
-});
+// onMounted(() => {
+//   searchFiles();
+// });
 </script>
 
 <template>
@@ -183,10 +184,11 @@ onMounted(() => {
         </n-button>
       </n-form-item>
     </n-form>
+    <n-button @click="searchFiles"> 查询文件 </n-button>
     <n-spin :show="loading">
       <n-data-table :columns="columns" :data="data" :single-line="false" />
     </n-spin>
-    <!-- <n-pagination v-model:page="page" :on-update:page="search" /> -->
+    <!-- <n-pagination v-model:page="page" :on-update:page="searchHistory" /> -->
   </n-space>
   <n-modal v-model:show="showModal">
     <n-card
