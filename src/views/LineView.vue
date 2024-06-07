@@ -11,6 +11,15 @@ const ws = ref(null);
 
 const fileList = ref([]);
 const filePath = ref('');
+const MODE_CHECK = 0;
+const MODE_FIX = 1;
+const OPTIONS = [
+  { label: '仅检测', value: MODE_CHECK },
+  { label: '检测并加粗', value: MODE_FIX },
+];
+const mode = ref(MODE_CHECK);
+const active = ref(false);
+const range = ref([null, null]);
 const response = ref({
   code: 0,
   data: {},
@@ -52,7 +61,14 @@ const handleCheck = () => {
   loading.value = true;
   const params = {
     file_path: filePath.value,
+    mode: mode.value,
   };
+  if (active.value) {
+    Object.assign(params, {
+      start: range.value[0] || -1,
+      end: range.value[1] || -1,
+    });
+  }
   lyla
     .post('/line', { json: params })
     .then((res) => {
@@ -97,18 +113,46 @@ const handleDownload = () => {
           <n-p depth="3" style="margin: 8px 0 0 0"> 检查文件中线的粗细 </n-p>
         </n-upload-dragger>
       </n-upload>
-      <n-space>
-        <n-button type="primary" ghost @click="handleUpload">
-          上传文件
-        </n-button>
+      <n-button type="primary" ghost @click="handleUpload"> 上传文件 </n-button>
+    </n-spin>
+    <div>
+      <n-h3 prefix="bar">2. 参数选择</n-h3>
+      <n-space align="center">
+        <n-select v-model:value="mode" :options="OPTIONS" />
+        <n-switch v-model:value="active" size="large">
+          <template #checked> 指定范围 </template>
+          <template #unchecked> 指定范围 </template>
+        </n-switch>
+        <n-input-group>
+          <n-input-group-label>从</n-input-group-label>
+          <n-input
+            autosize
+            placeholder="开始"
+            v-model:value="range[0]"
+            :disabled="!active"
+            :allow-input="onlyAllowNumber"
+          />
+          <n-input-group-label>页到</n-input-group-label>
+          <n-input
+            autosize
+            placeholder="结束"
+            v-model:value="range[1]"
+            :disabled="!active"
+            :allow-input="onlyAllowNumber"
+          />
+          <n-input-group-label>页</n-input-group-label>
+        </n-input-group>
         <n-button type="primary" ghost @click="handleCheck">
           开始检测
         </n-button>
-        <n-button type="primary" ghost @click="handleDownload">
-          下载文件
-        </n-button>
       </n-space>
-    </n-spin>
+    </div>
+    <div>
+      <n-h3 prefix="bar">3. 结果</n-h3>
+      <n-button type="primary" ghost @click="handleDownload">
+        下载文件
+      </n-button>
+    </div>
   </n-space>
 </template>
 
@@ -118,5 +162,11 @@ const handleDownload = () => {
 }
 .n-h3 {
   margin-bottom: 8px;
+}
+.n-input {
+  min-width: 80px;
+}
+.n-select {
+  width: 160px;
 }
 </style>
