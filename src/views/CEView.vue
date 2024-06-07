@@ -70,7 +70,7 @@ const compare = () => {
   loading.value = true;
   const params = {
     mode: mode.value,
-    sheet: n,
+    sheet: sheet.value,
     filePath: filePath.value,
   };
   lyla
