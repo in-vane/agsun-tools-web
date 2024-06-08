@@ -32,7 +32,6 @@ export const taskMap = {
  */
 export const rules = {
   username: {
-    required: true,
     message: '请输入姓名',
     trigger: 'blur',
   },
@@ -48,7 +47,6 @@ export const rules = {
     trigger: ['blur', 'change'],
   },
   file_path: {
-    required: true,
     message: '请选择文件',
     trigger: ['blur', 'change'],
   },
@@ -60,17 +58,40 @@ export const rules = {
 export const data = [
   {
     username: 'admin',
-    datetime: '2007-06-30',
+    datetime: '2024-06-30 12:00:00',
     type_id: '010',
-    text: '',
+    related_files: [
+      {
+        file_name: 'svg1.pdf',
+        file_path:
+          'http://10.22.78.13:8088/file/agsun-tools-server/db/011/2024/0521/21-31-01/admin/result/1.pdf',
+      },
+      {
+        file_name: 'svg2.pdf',
+        file_path:
+          'http://10.22.78.13:8088/file/agsun-tools-server/db/011/2024/0521/21-31-01/admin/result/2.pdf',
+      },
+    ],
     images: [],
-    file: 'http://10.22.78.13:8088/file/agsun-tools-server/db/011/2024/0521/21-31-01/admin/result/1.pdf',
+    text: '',
+    result_file: '',
   },
   {
     username: 'admin',
-    datetime: '2007-06-30',
+    datetime: '2024-06-30 12:00:00',
     type_id: '001',
-    text: '检测结果有诸多问题',
+    related_files: [
+      {
+        file_name: 'svg1.pdf',
+        file_path:
+          'http://10.22.78.13:8088/file/agsun-tools-server/db/011/2024/0521/21-31-01/admin/result/1.pdf',
+      },
+      {
+        file_name: 'svg2.pdf',
+        file_path:
+          'http://10.22.78.13:8088/file/agsun-tools-server/db/011/2024/0521/21-31-01/admin/result/2.pdf',
+      },
+    ],
     images: [
       'http://10.22.78.13:8088/file/agsun-tools-server/db/011/2024/0521/21-31-01/admin/1.jpg',
       'http://10.22.78.13:8088/file/agsun-tools-server/db/011/2024/0521/21-31-01/admin/2.jpg',
@@ -89,6 +110,7 @@ export const data = [
       'http://10.22.78.13:8088/file/agsun-tools-server/db/011/2024/0521/21-31-01/admin/15.jpg',
       'http://10.22.78.13:8088/file/agsun-tools-server/db/011/2024/0521/21-31-01/admin/16.jpg',
     ],
-    file: '',
+    text: '检测结果有诸多问题检测结果有诸多问题检测结果有诸多问题检测结果有诸多问题检测结果有诸多问题检测结果有诸多问题',
+    result_file: '',
   },
 ];

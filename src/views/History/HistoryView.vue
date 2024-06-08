@@ -1,20 +1,20 @@
 <script setup>
-import { onMounted, ref, h, watch } from 'vue';
-import { useMessage, NButton } from 'naive-ui';
+import { ref, h } from 'vue';
+import { useMessage, NButton, NIcon, NSpace, NA } from 'naive-ui';
+import { DocumentOutline as IDoc } from '@vicons/ionicons5';
 import { lyla } from '@/request';
 import { taskOptions, taskMap, rules, data } from './config';
 
 const message = useMessage();
-
 const formRef = ref(null);
 const formValue = ref({
   username: 'admin',
-  datetime: 1183135260000,
+  datetime: new Date().getTime(),
   type_id: '001',
   file_path: [],
 });
 const fileOptions = ref([]);
-const disabled = ref(true);
+const loadingSelect = ref(false);
 
 const loading = ref(false);
 const page = ref(1);
@@ -37,7 +37,6 @@ const searchHistory = (page) => {
 
 const handleValidateClick = (e) => {
   e && e.preventDefault();
-  console.log(formRef.value.model);
   formRef.value?.validate((errors) => {
     if (!errors) {
       searchHistory();
@@ -48,30 +47,26 @@ const handleValidateClick = (e) => {
 };
 
 const searchFiles = () => {
-  console.log(formRef.value.model);
-  formRef.value?.validate((errors) => {
-    disabled.value = errors;
-    if (!errors) {
-      const params = {
-        username: formRef.value.model.username,
-        datetime: formRef.value.model.datetime,
-        type_id: formRef.value.model.type_id,
-      };
-      lyla
-        .post('/history/files', { json: params })
-        .then((res) => {
-          console.log(res);
-          const result = Array.isArray(res.json.data) ? res.json.data : [];
-          const options = result.map((row) => ({
-            label: row.file_name,
-            value: file_path,
-          }));
-          console.log(options);
-          fileOptions.value = options;
-        })
-        .catch((err) => {});
-    }
-  });
+  loadingSelect.value = true;
+  const params = {
+    username: formRef.value.model.username,
+    datetime: formRef.value.model.datetime,
+    type_id: formRef.value.model.type_id,
+  };
+  lyla
+    .post('/history/files', { json: params })
+    .then((res) => {
+      const result = Array.isArray(res.json.data) ? res.json.data : [];
+      const options = result.map((row) => ({
+        label: row.file_name,
+        value: row.file_path,
+      }));
+      fileOptions.value = options;
+    })
+    .catch((err) => {})
+    .finally(() => {
+      loadingSelect.value = false;
+    });
 };
 
 const showImages = (row) => {
@@ -79,67 +74,80 @@ const showImages = (row) => {
   showModal.value = true;
 };
 
+const onSelectShow = (show) => {
+  show && searchFiles();
+};
+
 const columns = [
-  { title: '用户', key: 'username', width: 100, resizable: true },
-  { title: '时间', key: 'datetime', width: 120 },
+  {
+    title: '用户',
+    key: 'username',
+    width: 80,
+    ellipsis: { tooltip: true },
+    fixed: 'left',
+  },
+  { title: '时间', key: 'datetime', width: 180 },
   {
     title: '功能',
-    key: 'type_id',
-    width: 120,
+    width: 100,
     render: (row) => taskMap[row.type_id],
   },
-  { title: '涉及文件', key: 'file_path', ellipsis: true, resizable: true },
   {
-    title: '结果',
-    key: 'result',
-    children: [
-      {
-        title: '信息',
-        key: 'text',
-        ellipsis: true,
-        resizable: true,
-        render: (row) => row.text || '-',
-      },
-      {
-        title: '图片',
-        key: 'images',
-        width: 100,
-        render: (row) => {
-          return h(
+    title: '对比文件',
+    key: 'file_path',
+    minWidth: 200,
+    render: (row) => {
+      return h(
+        NSpace,
+        null,
+        row.related_files.map((file) =>
+          h(NA, { href: file.file_path, target: '_blank' }, [file.file_name])
+        )
+      );
+    },
+  },
+  {
+    title: '结果信息',
+    key: 'text',
+    ellipsis: { tooltip: true },
+    render: (row) => row.text || '-',
+  },
+  {
+    title: '结果图片',
+    key: 'images',
+    width: 80,
+    render: (row) => {
+      return h(
+        NButton,
+        {
+          size: 'small',
+          text: true,
+          type: 'primary',
+          onClick: () => showImages(row),
+        },
+        { default: () => '查看' }
+      );
+    },
+  },
+  {
+    title: '结果文件',
+    width: 80,
+    render: (row) => {
+      return row.result_file
+        ? h(
             NButton,
             {
               size: 'small',
-              onClick: () => showImages(row),
+              quaternary: true,
+              type: 'primary',
+              onClick: () => {},
             },
-            { default: () => '查看图片' }
-          );
-        },
-      },
-      {
-        title: '文件',
-        key: 'file',
-        ellipsis: true,
-        render: (row) => row.file || '-',
-      },
-    ],
+            { icon: () => h(NIcon, null, { default: () => h(IDoc) }) }
+          )
+        : '-';
+    },
   },
 ];
-
-// watch(
-//   () => [
-//     formValue.value.username,
-//     formValue.value.datetime,
-//     formValue.value.type_id,
-//   ],
-//   (newValues, oldValues) => {
-//     searchFiles();
-//   },
-//   { deep: true }
-// );
-
-// onMounted(() => {
-//   searchFiles();
-// });
 </script>
 
 <template>
@@ -165,12 +173,13 @@ const columns = [
           :options="taskOptions"
         />
       </n-form-item>
-      <n-form-item label="文件" path="type_id">
+      <n-form-item label="文件" path="file_path">
         <n-select
           v-model:value="formValue.file_path"
           placeholder="请先选择前面的项"
           :options="fileOptions"
-          :disabled="disabled"
+          :loading="loadingSelect"
+          @update:show="onSelectShow"
           multiple
         />
       </n-form-item>
@@ -184,9 +193,14 @@ const columns = [
         </n-button>
       </n-form-item>
     </n-form>
-    <n-button @click="searchFiles"> 查询文件 </n-button>
     <n-spin :show="loading">
-      <n-data-table :columns="columns" :data="data" :single-line="false" />
+      <n-data-table
+        size="small"
+        :columns="columns"
+        :data="response"
+        :single-line="false"
+        scroll-x="100%"
+      />
     </n-spin>
     <!-- <n-pagination v-model:page="page" :on-update:page="searchHistory" /> -->
   </n-space>
