@@ -47,6 +47,7 @@ export const rules = {
     trigger: ['blur', 'change'],
   },
   file_path: {
+    type: "array",
     message: '请选择文件',
     trigger: ['blur', 'change'],
   },
