@@ -132,16 +132,16 @@ const compare = () => {
     <n-divider />
     <n-h3 prefix="bar">2. 检测结果</n-h3>
     <div class="result-box">
-      <n-image
-        v-show="response.data?.excel_image_base64"
-        :src="response.data?.excel_image_base64"
-        width="100%"
-      />
-      <n-image
-        v-show="response.data?.pdf_image_base64"
-        :src="response.data?.pdf_image_base64"
-        width="100%"
-      />
+      <div v-show="response.data?.excel_image_base64">
+        <n-badge value="Excel" color="#18a058" :offset="[-28, 13]">
+          <n-image :src="response.data?.excel_image_base64" width="100%" />
+        </n-badge>
+      </div>
+      <div v-show="response.data?.pdf_image_base64">
+        <n-badge value="PDF" color="#18a058" :offset="[-24, 13]">
+          <n-image :src="response.data?.pdf_image_base64" width="100%" />
+        </n-badge>
+      </div>
     </div>
   </div>
 </template>
