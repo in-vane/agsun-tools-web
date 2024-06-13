@@ -1,5 +1,13 @@
+.n-upload-file-list .n-upload-file .n-upload-file-info .n-upload-file-info__name {
+  color: #fff;
+}
+
 .n-upload-file {
-  background-color: rgba(24, 160, 88, 0.1);
+  background-color: #18A058FF;
   border-radius: 3px;
   margin: 3px 0;
+}
+
+.n-upload-file-list .n-upload-file:hover {
+  background-color: #0C7A43FF;
 }
