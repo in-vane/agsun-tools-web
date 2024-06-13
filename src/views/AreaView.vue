@@ -89,9 +89,9 @@ const handleUpload = async () => {
   }
 };
 
-const handlePreviewClick = (selectedPDF, selectedImg) => {
-  current.value[0] = selectedPDF;
-  current.value[1] = selectedImg;
+const handlePreviewClick = (selectedPDFIndex, selectedImgIndex) => {
+  current.value[0] = selectedPDFIndex;
+  current.value[1] = selectedImgIndex;
 };
 
 const handleGetCrop = () => {
@@ -231,15 +231,27 @@ onUnmounted(() => {
           <div class="scroll-box">
             <n-scrollbar class="n-scrollbar" x-scrollable trigger="none">
               <div class="preview-box">
-                <n-image
-                  v-for="(img, i) in images[0]"
-                  :key="i"
-                  :src="img"
-                  alt="image"
-                  height="200px"
-                  preview-disabled
-                  @click="(e) => handlePreviewClick(0, i)"
-                />
+                <div v-for="(img, i) in images[0]" :key="i">
+                  <n-badge
+                    :value="i + 1"
+                    :color="
+                      current[0] == 0
+                        ? current[1] == i
+                          ? '#18a058'
+                          : 'gray'
+                        : 'gray'
+                    "
+                    :offset="[-10, 10]"
+                  >
+                    <n-image
+                      :src="img"
+                      alt="image"
+                      height="200px"
+                      preview-disabled
+                      @click="(e) => handlePreviewClick(0, i)"
+                    />
+                  </n-badge>
+                </div>
               </div>
             </n-scrollbar>
             <div class="preview-crop">
@@ -258,15 +270,27 @@ onUnmounted(() => {
           <div class="scroll-box">
             <n-scrollbar x-scrollable trigger="none">
               <div class="preview-box">
-                <n-image
-                  v-for="(img, i) in images[1]"
-                  :key="i"
-                  :src="img"
-                  alt="image"
-                  height="200px"
-                  preview-disabled
-                  @click="(e) => handlePreviewClick(1, i)"
-                />
+                <div v-for="(img, i) in images[1]" :key="i">
+                  <n-badge
+                    :value="i + 1"
+                    :color="
+                      current[0] == 1
+                        ? current[1] == i
+                          ? '#18a058'
+                          : 'gray'
+                        : 'gray'
+                    "
+                    :offset="[-10, 10]"
+                  >
+                    <n-image
+                      :src="img"
+                      alt="image"
+                      height="200px"
+                      preview-disabled
+                      @click="(e) => handlePreviewClick(1, i)"
+                    />
+                  </n-badge>
+                </div>
               </div>
             </n-scrollbar>
             <div class="preview-crop">
