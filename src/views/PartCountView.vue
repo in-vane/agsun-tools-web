@@ -292,7 +292,7 @@ onUnmounted(() => {
               点击或者拖动文件到该区域来上传
             </n-text>
             <n-p depth="3" style="margin: 8px 0 0 0">
-              检查两份pdf中爆炸图与安装图不一致的部分
+              检查爆炸图和明细表
             </n-p>
           </n-upload-dragger>
         </n-upload>
