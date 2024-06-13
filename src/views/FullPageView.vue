@@ -16,6 +16,7 @@ const fileList = ref([]);
 const filePath = ref(['', '']);
 const active = ref(false);
 const start = ref(['', '']);
+const end = ref(['', '']);
 const loadingCompare = ref(false);
 const response = ref({
   code: 0,
@@ -69,6 +70,8 @@ const handleCompare = () => {
     file_path_2: filePath.value[1],
     start_1: start.value[0] || -1,
     start_2: start.value[1] || -1,
+    end_1: end.value[0] || -1,
+    end_2: end.value[1] || -1,
   };
   if (!active.value) {
     params.start_1 = -1;
@@ -136,7 +139,14 @@ const handleCompare = () => {
               v-model:value="start[0]"
               :allow-input="onlyAllowNumber"
               autosize
-              placeholder="起始"
+              placeholder="从"
+            />
+            <n-input
+              :disabled="!active"
+              v-model:value="end[0]"
+              :allow-input="onlyAllowNumber"
+              autosize
+              placeholder="到"
             />
             <n-input-group-label>页</n-input-group-label>
           </n-input-group>
@@ -147,7 +157,14 @@ const handleCompare = () => {
               v-model:value="start[1]"
               :allow-input="onlyAllowNumber"
               autosize
-              placeholder="起始"
+              placeholder="从"
+            />
+            <n-input
+              :disabled="!active"
+              v-model:value="end[1]"
+              :allow-input="onlyAllowNumber"
+              autosize
+              placeholder="到"
             />
             <n-input-group-label>页</n-input-group-label>
           </n-input-group>
