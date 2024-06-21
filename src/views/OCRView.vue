@@ -100,7 +100,6 @@ const handleCompare = () => {
     message.info(INFO_NO_FILE);
     return;
   }
-  handleCrop();
   loadingUpload.value = true;
   const file = fileList.value[0].file;
   const url = mode.value == MODE_CHAR ? '/ocr_char' : '/ocr_icon';
