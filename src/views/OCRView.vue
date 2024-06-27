@@ -101,10 +101,9 @@ const handleCompare = () => {
     return;
   }
   loadingUpload.value = true;
-  const file = fileList.value[0].file;
   const url = mode.value == MODE_CHAR ? '/ocr_char' : '/ocr_icon';
   const params = {
-    filename: file.name,
+    file_path: filePath.value,
     mode: mode.value,
     page: current.value + 1,
     crop: capturedImage.value,
@@ -130,6 +129,7 @@ const startCamera = async () => {
     }
   } catch (error) {
     console.error('Error accessing the camera: ', error);
+    message.error('未检测到摄像头')
   }
 };
 
