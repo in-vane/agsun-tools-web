@@ -76,6 +76,8 @@ const handleCompare = () => {
   if (!active.value) {
     params.start_1 = -1;
     params.start_2 = -1;
+    params.end_1 = -1;
+    params.end_2 = -1;
   }
   lyla
     .post('/fullPage', { json: params })
