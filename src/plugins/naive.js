@@ -56,6 +56,8 @@ import {
   NDatePicker,
   NModal,
   NCard,
+  NDrawer,
+  NDrawerContent,
 } from 'naive-ui';
 
 // https://www.naiveui.com/en-US/os-theme/docs/import-on-demand
@@ -117,6 +119,8 @@ const naive = create({
     NDatePicker,
     NModal,
     NCard,
+    NDrawer,
+    NDrawerContent,
   ],
 });
 

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps, toRefs, watch, onMounted } from 'vue';
+import { ref, toRefs, watch, onMounted } from 'vue';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 
 import { useFileStore } from '@/store/modules/file';
@@ -80,7 +80,7 @@ onMounted(() => {
       :columns="columns"
       :data="history"
       :row-props="rowProps"
-      :max-height="320"
+      :max-height="240"
     />
   </n-flex>
 </template>

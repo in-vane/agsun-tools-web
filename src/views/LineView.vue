@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
-import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
 import {
   onlyAllowNumber,
