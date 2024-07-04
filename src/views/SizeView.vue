@@ -1,12 +1,11 @@
 <script setup>
 import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
-import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
 import { INFO_NO_FILE } from '@/config/const.config';
 import { onlyAllowNumber, checkFileUploaded, uploadFile } from '@/utils';
+import CUploadFile from '@/components/uploadFile.vue';
 
-const upload = ref(null);
 const message = useMessage();
 
 const MODE_RECT = 0;
@@ -54,7 +53,7 @@ const handleUpload = async () => {
     message.info(INFO_NO_FILE);
     return;
   }
-  const record = await checkFileUploaded(fileList.value[0].file);
+  const record = await checkFileUploaded(fileList.value[0]);
   if (record) {
     filePath.value = record.file_path;
     message.success('已上传');
@@ -89,28 +88,7 @@ const checkSize = () => {
     <div>
       <n-h3 prefix="bar">1. 选择要检查尺寸的CE文件</n-h3>
       <n-spin :show="loading">
-        <n-upload
-          ref="upload"
-          accept=".pdf"
-          :max="1"
-          :default-upload="false"
-          v-model:file-list="fileList"
-          @change="(data) => (fileList = data.fileList)"
-        >
-          <n-upload-dragger>
-            <div style="margin-bottom: 12px">
-              <n-icon size="48" :depth="3">
-                <archive-icon />
-              </n-icon>
-            </div>
-            <n-text style="font-size: 16px">
-              点击或者拖动文件到该区域来上传
-            </n-text>
-            <n-p depth="3" style="margin: 8px 0 0 0">
-              检查贴纸上标注尺寸是否与实际尺寸相符
-            </n-p>
-          </n-upload-dragger>
-        </n-upload>
+        <c-upload-file :fileList="fileList" :loading="loading" />
         <n-space align="center">
           <n-select v-model:value="mode" :options="OPTIONS" />
           <n-switch v-model:value="active" size="large">

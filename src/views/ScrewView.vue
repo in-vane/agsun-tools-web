@@ -4,7 +4,6 @@ import { useMessage, NButton, NInput, NIcon } from 'naive-ui';
 import { lyla, openWebsocket } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import {
-  ArchiveOutline as ArchiveIcon,
   AddOutline as AddIcon,
   TrashOutline as TrashIcon,
 } from '@vicons/ionicons5';
@@ -19,9 +18,9 @@ import {
   uploadFile,
   getImages,
 } from '@/utils';
+import CUploadFile from '@/components/uploadFile.vue';
 
 const message = useMessage();
-const upload = ref(null);
 const ws = ref(null);
 
 const fileList = ref([]);
@@ -78,7 +77,7 @@ const handleUpload = async () => {
     return;
   }
   let type = WEBSOCKET_TYPE.UPLOAD;
-  const record = await checkFileUploaded(fileList.value[0].file);
+  const record = await checkFileUploaded(fileList.value[0]);
   if (record) {
     filePath.value = record.file_path;
     type = WEBSOCKET_TYPE.PDF2IMG;
@@ -245,27 +244,7 @@ const options = {
     <!-- upload -->
     <n-spin :show="loadingUpload">
       <n-h3 prefix="bar">1. 上传PDF</n-h3>
-      <n-upload
-        ref="upload"
-        :max="1"
-        :default-upload="false"
-        v-model:file-list="fileList"
-        @change="(data) => (fileList = data.fileList)"
-      >
-        <n-upload-dragger>
-          <div style="margin-bottom: 12px">
-            <n-icon size="48" :depth="3">
-              <archive-icon />
-            </n-icon>
-          </div>
-          <n-text style="font-size: 16px">
-            点击或者拖动文件到该区域来上传
-          </n-text>
-          <n-p depth="3" style="margin: 8px 0 0 0">
-            检查螺丝包中数量的正误
-          </n-p>
-        </n-upload-dragger>
-      </n-upload>
+      <c-upload-file :fileList="fileList" :loading="loadingUpload" />
       <n-button type="primary" ghost @click="handleUpload"> 开始转换 </n-button>
     </n-spin>
     <!-- crop table -->

@@ -7,6 +7,9 @@ import {
   SHARD_SIZE,
   WEBSOCKET_TYPE,
 } from '@/config/const.config';
+import { useFileStore } from '@/store/modules/file';
+
+const fileStore = useFileStore();
 
 /**
  * input只允许数字
@@ -72,7 +75,8 @@ export const getMD5 = (file) =>
  * @returns {Boolean}
  */
 export const checkFileUploaded = async (file) => {
-  const md5 = await getMD5(file);
+  const md5 = await getMD5(file.file);
+  fileStore.updateFiles(md5, file);
   const response = await lyla.post('/isFileUploaded', { json: { md5 } });
   let record = response.json.data?.result;
   console.log(record);

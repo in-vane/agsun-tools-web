@@ -5,9 +5,9 @@ import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
 import { INFO_NO_FILE } from '@/config/const.config';
 import { onlyAllowNumber, checkFileUploaded, uploadFile } from '@/utils';
+import CUploadFile from '@/components/uploadFile.vue';
 
 const message = useMessage();
-const upload = ref(null);
 
 const ws = ref([null, null]);
 const loadingUpload = ref(false);
@@ -49,7 +49,7 @@ const handleUpload = async () => {
   }
   let record = null;
   for (let i = 0; i < 2; i++) {
-    record = await checkFileUploaded(fileList.value[i].file);
+    record = await checkFileUploaded(fileList.value[i]);
     if (record) {
       filePath.value[i] = record.file_path;
       message.info(`文件${i + 1}已上传`);
@@ -96,30 +96,7 @@ const handleCompare = () => {
     <div>
       <n-spin :show="loadingUpload">
         <n-h3 prefix="bar">1. 文档对比(文字模式), 请选择文件上传</n-h3>
-        <n-upload
-          multiple
-          ref="upload"
-          accept=".pdf"
-          :max="2"
-          :default-upload="false"
-          v-model:file-list="fileList"
-          :disabled="loadingUpload"
-          @change="(data) => (fileList = data.fileList)"
-        >
-          <n-upload-dragger>
-            <div style="margin-bottom: 12px">
-              <n-icon size="48" :depth="3">
-                <archive-icon />
-              </n-icon>
-            </div>
-            <n-text style="font-size: 16px">
-              点击或者拖动文件到该区域来上传
-            </n-text>
-            <n-p depth="3" style="margin: 8px 0 0 0">
-              按页检查两份pdf中不一致的部分
-            </n-p>
-          </n-upload-dragger>
-        </n-upload>
+        <c-upload-file :fileList="fileList" :loading="loadingUpload" />
         <n-button type="primary" ghost @click="handleUpload">
           上传文件
         </n-button>

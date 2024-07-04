@@ -4,6 +4,7 @@ import { useMessage } from 'naive-ui';
 import { lyla, openWebsocket } from '@/request';
 import { INFO_NO_FILE, WEBSOCKET_TYPE } from '@/config/const.config';
 import { checkFileUploaded, uploadFile, getImages } from '@/utils';
+import CUploadFile from '@/components/uploadFile.vue';
 
 const message = useMessage();
 
@@ -67,7 +68,7 @@ const handleUploadPDF = async () => {
     return;
   }
   let type = WEBSOCKET_TYPE.UPLOAD;
-  const record = await checkFileUploaded(fileList.value[0].file);
+  const record = await checkFileUploaded(fileList.value[0]);
   if (record) {
     filePath.value = record.file_path;
     type = WEBSOCKET_TYPE.PDF2IMG;
@@ -129,7 +130,7 @@ const startCamera = async () => {
     }
   } catch (error) {
     console.error('Error accessing the camera: ', error);
-    message.error('未检测到摄像头')
+    message.error('未检测到摄像头');
   }
 };
 
@@ -168,14 +169,7 @@ onBeforeUnmount(() => {
     <!-- upload -->
     <n-spin :show="loadingUpload" content-class="upload-spin-content">
       <n-h3 prefix="bar">1. 上传PDF</n-h3>
-      <n-upload
-        :max="1"
-        :default-upload="false"
-        v-model:file-list="fileList"
-        @change="(data) => (fileList = data.fileList)"
-      >
-        <n-button>选择文件</n-button>
-      </n-upload>
+      <c-upload-file :fileList="fileList" :loading="loadingUpload" />
       <n-button
         type="primary"
         ghost

@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useMessage } from 'naive-ui';
-import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import { WEBSOCKET_TYPE, CROP_BOX_STYLE } from '@/config/const.config';
@@ -11,9 +10,9 @@ import {
   uploadFile,
   getImages,
 } from '@/utils';
+import CUploadFile from '@/components/uploadFile.vue';
 
 const message = useMessage();
-const upload = ref(null);
 const ws = ref([null, null]);
 
 const fileList = ref([]);
@@ -76,7 +75,7 @@ const handleUpload = async () => {
   let record = null;
   let type = WEBSOCKET_TYPE.UPLOAD;
   for (let i = 0; i < 2; i++) {
-    record = await checkFileUploaded(fileList.value[i].file);
+    record = await checkFileUploaded(fileList.value[i]);
     if (record) {
       filePath.value[i] = record.file_path;
       type = WEBSOCKET_TYPE.PDF2IMG;
@@ -150,30 +149,7 @@ onUnmounted(() => {
     <!-- upload -->
     <div>
       <n-h3 prefix="bar">1. 上传PDF</n-h3>
-      <n-upload
-        multiple
-        ref="upload"
-        accept=".pdf"
-        :max="2"
-        :default-upload="false"
-        v-model:file-list="fileList"
-        :disabled="loadingUpload"
-        @change="(data) => (fileList = data.fileList)"
-      >
-        <n-upload-dragger>
-          <div style="margin-bottom: 12px">
-            <n-icon size="48" :depth="3">
-              <archive-icon />
-            </n-icon>
-          </div>
-          <n-text style="font-size: 16px">
-            点击或者拖动文件到该区域来上传
-          </n-text>
-          <n-p depth="3" style="margin: 8px 0 0 0">
-            检查两份pdf中爆炸图与安装图不一致的部分
-          </n-p>
-        </n-upload-dragger>
-      </n-upload>
+      <c-upload-file :fileList="fileList" :loading="loadingUpload" />
       <n-space align="center">
         <n-switch v-model:value="active" size="large">
           <template #checked> 指定 </template>
@@ -327,9 +303,6 @@ onUnmounted(() => {
         <n-spin :show="loadingCompare">
           <n-space justify="space-between">
             <n-h3 prefix="bar">4. 对比结果(以文件1的区域为参照)</n-h3>
-            <!-- <n-button type="primary" ghost @click="handleSaveResult">
-              保存结果
-            </n-button> -->
           </n-space>
           <div class="preview-box preview-box-result">
             <n-image

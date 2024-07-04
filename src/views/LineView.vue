@@ -3,10 +3,15 @@ import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
-import { download, checkFileUploaded, uploadFile } from '@/utils';
+import {
+  onlyAllowNumber,
+  download,
+  checkFileUploaded,
+  uploadFile,
+} from '@/utils';
+import CUploadFile from '@/components/uploadFile.vue';
 
 const message = useMessage();
-const upload = ref(null);
 const ws = ref(null);
 
 const fileList = ref([]);
@@ -48,7 +53,7 @@ const handleUpload = async () => {
     message.info('请选择文件');
     return;
   }
-  const record = await checkFileUploaded(fileList.value[0].file);
+  const record = await checkFileUploaded(fileList.value[0]);
   if (record) {
     filePath.value = record.file_path;
     message.success('已上传');
@@ -93,26 +98,7 @@ const handleDownload = () => {
     <!-- upload -->
     <n-spin :show="loading">
       <n-h3 prefix="bar">1. 上传PDF</n-h3>
-      <n-upload
-        ref="upload"
-        accept=".pdf"
-        :max="1"
-        :default-upload="false"
-        v-model:file-list="fileList"
-        @change="(data) => (fileList = data.fileList)"
-      >
-        <n-upload-dragger>
-          <div style="margin-bottom: 12px">
-            <n-icon size="48" :depth="3">
-              <archive-icon />
-            </n-icon>
-          </div>
-          <n-text style="font-size: 16px">
-            点击或者拖动文件到该区域来上传
-          </n-text>
-          <n-p depth="3" style="margin: 8px 0 0 0"> 检查文件中线的粗细 </n-p>
-        </n-upload-dragger>
-      </n-upload>
+      <c-upload-file :fileList="fileList" :loading="loading" />
       <n-button type="primary" ghost @click="handleUpload"> 上传文件 </n-button>
     </n-spin>
     <div>
