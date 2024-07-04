@@ -3,6 +3,7 @@ import { ref, h } from 'vue';
 import { useMessage, NButton, NIcon, NSpace, NA } from 'naive-ui';
 import { DocumentOutline as IDoc } from '@vicons/ionicons5';
 import { lyla } from '@/request';
+import { download } from '@/utils';
 import { taskOptions, taskMap, rules, data } from './config';
 
 const message = useMessage();
@@ -140,7 +141,7 @@ const columns = [
               size: 'small',
               quaternary: true,
               type: 'primary',
-              onClick: () => {},
+              onClick: () => download('result.pdf', row.result_file),
             },
             { icon: () => h(NIcon, null, { default: () => h(IDoc) }) }
           )
