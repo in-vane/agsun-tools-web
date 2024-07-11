@@ -17,19 +17,14 @@ export const asyncRoutes = [
   {
     path: '/',
     name: 'MainLayout',
-    redirect: '/home',
+    redirect: '/area',
     component: () => import('@/layout/MainLayout.vue'),
     children: [
-      {
-        path: '/home',
-        name: 'home',
-        component: () => import('@/views/HomeView.vue'),
-      },
-      {
-        path: '/ce',
-        name: 'ce',
-        component: () => import('@/views/CEView.vue'),
-      },
+      // {
+      //   path: '/home',
+      //   name: 'home',
+      //   component: () => import('@/views/HomeView.vue'),
+      // },
       {
         path: '/area',
         name: 'area',
@@ -46,11 +41,6 @@ export const asyncRoutes = [
         component: () => import('@/views/PartCountView.vue'),
       },
       {
-        path: '/size',
-        name: 'size',
-        component: () => import('@/views/SizeView.vue'),
-      },
-      {
         path: '/pageNo',
         name: 'pageNo',
         component: () => import('@/views/PageNumberView.vue'),
@@ -59,6 +49,16 @@ export const asyncRoutes = [
         path: '/screw',
         name: 'screw',
         component: () => import('@/views/ScrewView.vue'),
+      },
+      {
+        path: '/ce',
+        name: 'ce',
+        component: () => import('@/views/CEView.vue'),
+      },
+      {
+        path: '/size',
+        name: 'size',
+        component: () => import('@/views/SizeView.vue'),
       },
       {
         path: '/lang',

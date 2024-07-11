@@ -19,17 +19,17 @@ import {
 import { renderIcon } from '@/utils';
 import { useUserStore } from '@/store/modules/user';
 
+import Doc from '@/views/HomeView.vue';
 import agsun from '@/assets/agsun.jpeg';
 
 const userStore = useUserStore();
 const userInfo = userStore.getUserInfo || {};
-console.log(userInfo);
 
 const renderLabel = (path, label) => () =>
   h(RouterLink, { to: { path } }, { default: () => label });
 
 const menuOptions = [
-  { label: renderLabel('/home', '首页'), key: 'home', icon: renderIcon(IHome) },
+  // { label: renderLabel('/home', '首页'), key: 'home', icon: renderIcon(IHome) },
   {
     label: renderLabel('/area', '区域对比'),
     key: 'area',
@@ -90,6 +90,8 @@ const menuOptions = [
 const routeName = ref('');
 const route = useRoute();
 
+const show = ref(false);
+
 watchEffect(() => {
   routeName.value = route.name;
 });
@@ -111,14 +113,11 @@ const logoutHanlder = async () => {
     <n-layout-header bordered>
       <n-flex justify="space-between" align="center">
         <n-image :src="agsun" />
-        <n-space>
-          <n-text>欢迎, {{ userInfo.name }}</n-text>
-          <n-button text @click="logoutHanlder">
-            <n-icon size="24">
-              <i-logout />
-            </n-icon>
-          </n-button>
-        </n-space>
+        <n-flex :size="24" align="center">
+          <n-text>欢迎, {{ userInfo.name || 'admin' }}</n-text>
+          <n-button @click="show = true"> 使用文档 </n-button>
+          <n-button @click="logoutHanlder"> 登出 </n-button>
+        </n-flex>
       </n-flex>
     </n-layout-header>
     <n-layout has-sider>
@@ -136,6 +135,7 @@ const logoutHanlder = async () => {
           :value="routeName"
           :collapsed-width="64"
           :collapsed-icon-size="22"
+          :default-expanded-keys="['functions']"
         />
       </n-layout-sider>
       <n-layout-content
@@ -147,7 +147,11 @@ const logoutHanlder = async () => {
         </n-message-provider>
       </n-layout-content>
     </n-layout>
-    <!-- <n-layout-footer bordered>Made by NBU</n-layout-footer> -->
+    <n-drawer v-model:show="show" :width="800">
+      <n-drawer-content title="使用文档">
+        <Doc />
+      </n-drawer-content>
+    </n-drawer>
   </n-layout>
 </template>
 
