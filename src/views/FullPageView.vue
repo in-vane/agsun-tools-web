@@ -12,6 +12,12 @@ const upload = ref(null);
 const ws = ref([null, null]);
 const loadingUpload = ref(false);
 
+const mode = ref(1);
+const options = [
+  { label: '精细模式', value: 0 },
+  { label: '默认模式', value: 1 },
+];
+
 const fileList = ref([]);
 const filePath = ref(['', '']);
 const active = ref(false);
@@ -66,6 +72,7 @@ const handleUpload = async () => {
 const handleCompare = () => {
   loadingCompare.value = true;
   const params = {
+    mode: mode.value,
     file_path_1: filePath.value[0],
     file_path_2: filePath.value[1],
     start_1: start.value[0] || -1,
@@ -130,6 +137,7 @@ const handleCompare = () => {
       <n-spin :show="loadingCompare">
         <n-h3 prefix="bar">2. 对比检测</n-h3>
         <n-space align="center">
+          <n-select v-model:value="mode" :options="options" />
           <n-switch v-model:value="active" size="large">
             <template #checked> 指定 </template>
             <template #unchecked> 指定 </template>
@@ -210,6 +218,9 @@ const handleCompare = () => {
 </template>
 
 <style scoped>
+.n-select {
+  width: 140px;
+}
 .n-space {
   gap: 24px 12px !important;
 }

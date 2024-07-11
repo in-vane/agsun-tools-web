@@ -16,6 +16,12 @@ const message = useMessage();
 const upload = ref(null);
 const ws = ref([null, null]);
 
+const mode = ref(0);
+const selectOptions = [
+  { label: '精细模式', value: 0 },
+  { label: '默认模式', value: 1 },
+];
+
 const fileList = ref([]);
 const filePath = ref(['', '']);
 const active = ref(false);
@@ -106,6 +112,7 @@ const handleCompare = () => {
   }
   loadingCompare.value = true;
   const params = {
+    mode: mode.value,
     file_path_1: filePath.value[0],
     file_path_2: filePath.value[1],
     img_1: cropend.value[0].split(',')[1],
@@ -175,6 +182,7 @@ onUnmounted(() => {
         </n-upload-dragger>
       </n-upload>
       <n-space align="center">
+        <n-select v-model:value="mode" :options="selectOptions" />
         <n-switch v-model:value="active" size="large">
           <template #checked> 指定 </template>
           <template #unchecked> 指定 </template>
@@ -346,6 +354,9 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.n-select {
+  width: 140px;
+}
 .n-space {
   gap: 24px 12px !important;
 }
