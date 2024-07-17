@@ -14,6 +14,7 @@ const filePath = ref('');
 const images = ref([]);
 const current = ref(0);
 const cameras = ref([]);
+const rotate = ref(false);
 
 const MODE_CHAR = 0;
 const MODE_ICON = 1;
@@ -85,9 +86,20 @@ const captureImage = () => {
     const height = videoRef.value.videoHeight;
     console.log(width, height);
 
-    canvasRef.value.width = width;
-    canvasRef.value.height = height;
-    context.drawImage(videoRef.value, 0, 0, width, height);
+    if (rotate.value) {
+      // For 90-degree rotation, swap width and height
+      canvasRef.value.width = height;
+      canvasRef.value.height = width;
+      context.save();
+      context.translate(height, 0);
+      context.rotate((90 * Math.PI) / 180);
+      context.drawImage(videoRef.value, 0, 0, width, height);
+      context.restore();
+    } else {
+      canvasRef.value.width = width;
+      canvasRef.value.height = height;
+      context.drawImage(videoRef.value, 0, 0, width, height);
+    }
 
     // Get the data URL of the captured image
     capturedImage.value = canvasRef.value.toDataURL('image/png');
@@ -129,7 +141,7 @@ const startCamera = async () => {
     }
   } catch (error) {
     console.error('Error accessing the camera: ', error);
-    message.error('未检测到摄像头')
+    message.error('未检测到摄像头');
   }
 };
 
@@ -155,6 +167,23 @@ const handleCloseCamera = () => {
     mediaTrack.value.getVideoTracks().forEach((track) => {
       track.stop();
     });
+  }
+};
+
+const rotateCamera = () => {
+  if (rotate.value) {
+    videoRef.value.style.transform = '';
+    rotate.value = false;
+  } else {
+    const videoWidth = videoRef.value.videoWidth;
+    const videoHeight = videoRef.value.videoHeight;
+    let height = videoHeight;
+    if (videoWidth > 600) {
+      height /= videoWidth / 600;
+    }
+    videoRef.value.style.transform = 'rotate(90deg)';
+    videoRef.value.style.transformOrigin = `${height / 2}px ${height / 2}px`;
+    rotate.value = true;
   }
 };
 
@@ -215,6 +244,7 @@ onBeforeUnmount(() => {
           <n-button :disabled="cameras.length == 0"> 切换摄像头 </n-button>
         </n-popselect>
         <n-select v-model:value="mode" :options="options" />
+        <n-button type="primary" ghost @click="rotateCamera"> 旋转 </n-button>
         <n-button type="primary" ghost @click="captureImage"> 截取 </n-button>
         <n-button type="primary" ghost @click="handleCompare">
           开始检测
@@ -223,7 +253,7 @@ onBeforeUnmount(() => {
       <!-- video区域 -->
       <n-spin :show="loadingCapture">
         <n-space size="small">
-          <video ref="videoRef" autoplay></video>
+          <video class="rotate90" ref="videoRef" autoplay></video>
           <n-image v-show="images.length" :src="images[current]" :width="160" />
           <n-image v-show="capturedImage" :src="capturedImage" :width="160" />
           <canvas ref="canvasRef"></canvas>
@@ -269,8 +299,7 @@ onBeforeUnmount(() => {
 video {
   border-radius: 3px;
   background: #000;
-  width: 100%;
-  max-width: 600px;
+  width: 600px;
   height: auto;
 }
 canvas {
