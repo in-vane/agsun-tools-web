@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
-import { download, checkFileUploaded, uploadFile } from '@/utils';
+import { download, checkFileUploaded, uploadFile, onlyAllowNumber } from '@/utils';
 
 const message = useMessage();
 const upload = ref(null);

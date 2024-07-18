@@ -9,7 +9,12 @@ import {
   WEBSOCKET_TYPE,
   CROP_BOX_STYLE,
 } from '@/config/const.config';
-import { checkFileUploaded, uploadFile, getImages } from '@/utils';
+import {
+  checkFileUploaded,
+  uploadFile,
+  getImages,
+  onlyAllowNumber,
+} from '@/utils';
 
 const message = useMessage();
 const upload = ref(null);
@@ -39,6 +44,8 @@ const sltoptions = [
   { label: '区域模式', value: MODE_RECT },
 ];
 const mode = ref(MODE_NORMAL);
+const active = ref(false);
+const range = ref([null, null]);
 
 const loadingUpload = ref(false);
 const loadingResult = ref(false);
@@ -96,6 +103,12 @@ const sendRect = () => {
     rect: rect.value,
     file_path: filePath.value,
   };
+  if (active.value) {
+    Object.assign(params, {
+      start: range.value[0] || -1,
+      end: range.value[1] || -1,
+    });
+  }
   lyla
     .post('/pageNumber', { json: params })
     .then((res) => {
@@ -156,6 +169,29 @@ const options = {
       <n-h3 prefix="bar">2. 请拉取页码范围高度</n-h3>
       <n-space align="center">
         <n-select v-model:value="mode" :options="sltoptions" />
+        <n-switch v-model:value="active" size="large">
+          <template #checked> 指定范围 </template>
+          <template #unchecked> 指定范围 </template>
+        </n-switch>
+        <n-input-group>
+          <n-input-group-label>从</n-input-group-label>
+          <n-input
+            autosize
+            placeholder="开始"
+            v-model:value="range[0]"
+            :disabled="!active"
+            :allow-input="onlyAllowNumber"
+          />
+          <n-input-group-label>页到</n-input-group-label>
+          <n-input
+            autosize
+            placeholder="结束"
+            v-model:value="range[1]"
+            :disabled="!active"
+            :allow-input="onlyAllowNumber"
+          />
+          <n-input-group-label>页</n-input-group-label>
+        </n-input-group>
         <n-button type="primary" ghost @click="sendRect"> 开始任务 </n-button>
       </n-space>
       <div class="scroll-box">
@@ -268,6 +304,9 @@ const options = {
 }
 .crop-box {
   margin-top: 8px;
+}
+.n-input {
+  min-width: 80px;
 }
 .n-select {
   width: 160px;
