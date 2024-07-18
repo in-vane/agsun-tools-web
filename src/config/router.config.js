@@ -3,7 +3,7 @@ export const constantRouter = [
   {
     path: '/',
     name: 'Root',
-    redirect: '/home',
+    redirect: '/area',
   },
   {
     path: '/login',
