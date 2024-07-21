@@ -9,10 +9,12 @@ import { onlyAllowNumber, checkFileUploaded, uploadFile } from '@/utils';
 const upload = ref(null);
 const message = useMessage();
 
-const MODE_RECT = 0;
-const MODE_CIR = 1;
+const MODE_CORN = 0;
+const MODE_RECT = 1;
+const MODE_CIR = 2;
 const OPTIONS = [
-  { label: '矩形模式', value: MODE_RECT },
+  { label: '角距模式', value: MODE_CORN },
+  { label: '边框模式', value: MODE_RECT },
   { label: '圆形模式', value: MODE_CIR },
 ];
 
@@ -21,7 +23,7 @@ const fileList = ref([]);
 const filePath = ref('');
 const loadingUpload = ref(false);
 
-const mode = ref(MODE_RECT);
+const mode = ref(MODE_CORN);
 const active = ref(false);
 const size = ref({ width: '', height: '', radius: '' });
 const loading = ref(false);
@@ -120,22 +122,6 @@ const checkSize = () => {
           <n-input-group>
             <n-input-group-label>手动输入</n-input-group-label>
             <n-input
-              v-if="mode == MODE_RECT"
-              autosize
-              placeholder="宽"
-              v-model:value="size.width"
-              :disabled="!active"
-              :allow-input="onlyAllowNumber"
-            />
-            <n-input
-              v-if="mode == MODE_RECT"
-              autosize
-              placeholder="高"
-              v-model:value="size.height"
-              :disabled="!active"
-              :allow-input="onlyAllowNumber"
-            />
-            <n-input
               v-if="mode == MODE_CIR"
               autosize
               placeholder="半径"
@@ -143,6 +129,22 @@ const checkSize = () => {
               :disabled="!active"
               :allow-input="onlyAllowNumber"
             />
+            <template v-else>
+              <n-input
+                autosize
+                placeholder="宽"
+                v-model:value="size.width"
+                :disabled="!active"
+                :allow-input="onlyAllowNumber"
+              />
+              <n-input
+                autosize
+                placeholder="高"
+                v-model:value="size.height"
+                :disabled="!active"
+                :allow-input="onlyAllowNumber"
+              />
+            </template>
           </n-input-group>
           <n-button type="primary" ghost @click="handleUpload">
             上传文件
