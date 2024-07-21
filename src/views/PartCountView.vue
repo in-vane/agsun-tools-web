@@ -25,6 +25,8 @@ const notification = useNotification();
 const upload = ref(null);
 const ws = ref(null);
 
+const jump = ref(null);
+
 const fileList = ref([]);
 const filePath = ref('');
 const loadingUpload = ref(false);
@@ -315,7 +317,18 @@ onUnmounted(() => {
     </div>
     <!-- preview -->
     <n-spin :show="loadingPartCount">
-      <n-h3 prefix="bar">2. 文件图像预览</n-h3>
+      <n-flex align="center">
+        <n-h3 prefix="bar">2. 文件图像预览</n-h3>
+        <n-input
+          v-model:value="jump"
+          :allow-input="num"
+          autosize
+          placeholder="页数"
+        />
+        <n-button type="primary" ghost @click="() => (current = jump - 1)">
+          快速选择
+        </n-button>
+      </n-flex>
       <div class="scroll-box">
         <n-scrollbar class="n-scrollbar" x-scrollable trigger="none">
           <div class="preview-box">

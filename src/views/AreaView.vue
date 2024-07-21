@@ -6,7 +6,7 @@ import { lyla, openWebsocket } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import { WEBSOCKET_TYPE, CROP_BOX_STYLE } from '@/config/const.config';
 import {
-  onlyAllowNumber,
+  onlyAllowNumber as num,
   checkFileUploaded,
   uploadFile,
   getImages,
@@ -16,6 +16,8 @@ const message = useMessage();
 const notification = useNotification();
 const upload = ref(null);
 const ws = ref([null, null]);
+
+const jump = ref([null, null]);
 
 const mode = ref(0);
 const selectOptions = [
@@ -199,14 +201,14 @@ onUnmounted(() => {
           <n-input
             :disabled="!active"
             v-model:value="limit[0].start"
-            :allow-input="onlyAllowNumber"
+            :allow-input="num"
             autosize
             placeholder="从"
           />
           <n-input
             :disabled="!active"
             v-model:value="limit[0].end"
-            :allow-input="onlyAllowNumber"
+            :allow-input="num"
             autosize
             placeholder="到"
           />
@@ -216,14 +218,14 @@ onUnmounted(() => {
           <n-input
             :disabled="!active"
             v-model:value="limit[1].start"
-            :allow-input="onlyAllowNumber"
+            :allow-input="num"
             autosize
             placeholder="从"
           />
           <n-input
             :disabled="!active"
             v-model:value="limit[1].end"
-            :allow-input="onlyAllowNumber"
+            :allow-input="num"
             autosize
             placeholder="到"
           />
@@ -242,7 +244,22 @@ onUnmounted(() => {
     <n-spin :show="loadingUpload">
       <div class="box-divider">
         <div class="box-divider-item">
-          <n-h3 prefix="bar"> 文件1中的图像预览 </n-h3>
+          <n-flex align="center">
+            <n-h3 prefix="bar"> 文件1中的图像预览 </n-h3>
+            <n-input
+              v-model:value="jump[0]"
+              :allow-input="num"
+              autosize
+              placeholder="页数"
+            />
+            <n-button
+              type="primary"
+              ghost
+              @click="() => handlePreviewClick(0, jump[0] - 1)"
+            >
+              快速选择
+            </n-button>
+          </n-flex>
           <div class="scroll-box">
             <n-scrollbar class="n-scrollbar" x-scrollable trigger="none">
               <div class="preview-box">
@@ -281,7 +298,22 @@ onUnmounted(() => {
           </div>
         </div>
         <div class="box-divider-item">
-          <n-h3 prefix="bar">文件2中的图像预览 </n-h3>
+          <n-flex align="center">
+            <n-h3 prefix="bar"> 文件2中的图像预览 </n-h3>
+            <n-input
+              v-model:value="jump[1]"
+              :allow-input="num"
+              autosize
+              placeholder="页数"
+            />
+            <n-button
+              type="primary"
+              ghost
+              @click="() => handlePreviewClick(0, jump[1] - 1)"
+            >
+              快速选择
+            </n-button>
+          </n-flex>
           <div class="scroll-box">
             <n-scrollbar x-scrollable trigger="none">
               <div class="preview-box">
