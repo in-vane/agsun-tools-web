@@ -29,11 +29,14 @@ const { lyla } = createLyla({
     ],
     onResponseError: [
       (error, reject) => {
-        const $message = window['$message'];
+        const $message = window['$notification'];
         const userStore = useUser();
         const { response } = error;
         if (!response) {
-          $message.error('任务失败: 网络或服务故障');
+          $message.error({
+            title: '任务失败',
+            content: '网络或服务故障',
+          });
           reject(statusText);
         }
         const { status, statusText } = response;
@@ -44,11 +47,17 @@ const { lyla } = createLyla({
             location.href = '/login';
             break;
           case 403:
-            $message.error(`任务失败: 没有权限, ${statusText}`);
+            $message.error({
+              title: '任务失败',
+              content: `没有权限, ${statusText}`,
+            });
             break;
 
           default:
-            $message.error(`任务失败: ${statusText}`);
+            $message.error({
+              title: '任务失败',
+              content: statusText,
+            });
             break;
         }
 

@@ -1,12 +1,11 @@
 <script setup>
 import { onBeforeUnmount, ref } from 'vue';
-import { useMessage, useNotification } from 'naive-ui';
+import { useMessage } from 'naive-ui';
 import { lyla, openWebsocket } from '@/request';
 import { INFO_NO_FILE, WEBSOCKET_TYPE } from '@/config/const.config';
 import { checkFileUploaded, uploadFile, getImages } from '@/utils';
 
 const message = useMessage();
-const notification = useNotification();
 
 const ws = ref(null);
 const loadingUpload = ref(false);
@@ -126,13 +125,7 @@ const handleCompare = () => {
     .then((res) => {
       response.value = res.json;
     })
-    .catch((err) => {
-      const msg = typeof err == 'string' ? err : err.message;
-      notification.error({
-        title: '任务失败',
-        content: msg,
-      });
-    })
+    .catch((err) => {})
     .finally(() => {
       loadingUpload.value = false;
     });

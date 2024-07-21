@@ -1,6 +1,6 @@
 <script setup>
 import { ref, h } from 'vue';
-import { useMessage, useNotification, NButton, NInput, NIcon } from 'naive-ui';
+import { useMessage, NButton, NInput, NIcon } from 'naive-ui';
 import { lyla, openWebsocket } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import {
@@ -14,16 +14,17 @@ import {
   CROP_BOX_STYLE,
 } from '@/config/const.config';
 import {
-  onlyAllowNumber,
+  onlyAllowNumber as num,
   checkFileUploaded,
   uploadFile,
   getImages,
 } from '@/utils';
 
 const message = useMessage();
-const notification = useNotification();
 const upload = ref(null);
 const ws = ref(null);
+
+const jump = ref(null);
 
 const fileList = ref([]);
 const filePath = ref('');
@@ -104,13 +105,7 @@ const handleOCR = () => {
       console.log(res);
       overview.value = res.json.data.result;
     })
-    .catch((err) => {
-      const msg = typeof err == 'string' ? err : err.message;
-      notification.error({
-        title: '任务失败',
-        content: msg,
-      });
-    })
+    .catch((err) => {})
     .finally(() => {
       loadingOCR.value = false;
     });
@@ -158,13 +153,7 @@ const handleCheck = () => {
       console.log(res);
       response.value = res.json;
     })
-    .catch((err) => {
-      const msg = typeof err == 'string' ? err : err.message;
-      notification.error({
-        title: '任务失败',
-        content: msg,
-      });
-    })
+    .catch((err) => {})
     .finally(() => {
       loadingRes.value = false;
     });
@@ -283,7 +272,18 @@ const options = {
     </n-spin>
     <!-- crop table -->
     <n-spin :show="loadingOCR">
-      <n-h3 prefix="bar">2. 选取螺丝表</n-h3>
+      <n-flex align="center">
+        <n-h3 prefix="bar">2. 选取螺丝表</n-h3>
+        <n-input
+          v-model:value="jump"
+          :allow-input="num"
+          autosize
+          placeholder="页数"
+        />
+        <n-button type="primary" ghost @click="() => (current = jump - 1)">
+          快速选择
+        </n-button>
+      </n-flex>
       <div class="scroll-box">
         <n-scrollbar class="n-scrollbar" x-scrollable trigger="none">
           <div class="preview-box">
@@ -340,14 +340,14 @@ const options = {
           <n-input-group-label>步骤图从</n-input-group-label>
           <n-input
             v-model:value="limit.start"
-            :allow-input="onlyAllowNumber"
+            :allow-input="num"
             autosize
             placeholder="起始"
           />
           <n-input-group-label>页到</n-input-group-label>
           <n-input
             v-model:value="limit.end"
-            :allow-input="onlyAllowNumber"
+            :allow-input="num"
             autosize
             placeholder="结束"
           />
