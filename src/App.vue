@@ -4,9 +4,11 @@ import { RouterView } from 'vue-router';
 
 <template>
   <div class="content">
-    <n-message-provider :max="1">
-      <router-view />
-    </n-message-provider>
+    <n-notification-provider>
+      <n-message-provider :max="2">
+        <router-view />
+      </n-message-provider>
+    </n-notification-provider>
   </div>
 </template>
 

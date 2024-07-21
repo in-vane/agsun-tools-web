@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useMessage } from 'naive-ui';
+import { useMessage, useNotification } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
 import { INFO_NO_FILE } from '@/config/const.config';
@@ -8,6 +8,7 @@ import { onlyAllowNumber, checkFileUploaded, uploadFile } from '@/utils';
 
 const upload = ref(null);
 const message = useMessage();
+const notification = useNotification();
 
 const MODE_CORN = 0;
 const MODE_RECT = 1;
@@ -81,7 +82,13 @@ const checkSize = () => {
       console.log(res);
       response.value = res.json;
     })
-    .catch((err) => {})
+    .catch((err) => {
+      const msg = typeof err == 'string' ? err : err.message;
+      notification.error({
+        title: '任务失败',
+        content: msg,
+      });
+    })
     .finally(() => (loading.value = false));
 };
 </script>

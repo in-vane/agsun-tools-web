@@ -1,6 +1,6 @@
 <script setup>
 import { ref, h } from 'vue';
-import { useMessage, NButton, NInput, NIcon } from 'naive-ui';
+import { useMessage, useNotification, NButton, NInput, NIcon } from 'naive-ui';
 import { lyla, openWebsocket } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import {
@@ -21,6 +21,7 @@ import {
 } from '@/utils';
 
 const message = useMessage();
+const notification = useNotification();
 const upload = ref(null);
 const ws = ref(null);
 
@@ -103,7 +104,13 @@ const handleOCR = () => {
       console.log(res);
       overview.value = res.json.data.result;
     })
-    .catch((err) => {})
+    .catch((err) => {
+      const msg = typeof err == 'string' ? err : err.message;
+      notification.error({
+        title: '任务失败',
+        content: msg,
+      });
+    })
     .finally(() => {
       loadingOCR.value = false;
     });
@@ -151,7 +158,13 @@ const handleCheck = () => {
       console.log(res);
       response.value = res.json;
     })
-    .catch((err) => {})
+    .catch((err) => {
+      const msg = typeof err == 'string' ? err : err.message;
+      notification.error({
+        title: '任务失败',
+        content: msg,
+      });
+    })
     .finally(() => {
       loadingRes.value = false;
     });

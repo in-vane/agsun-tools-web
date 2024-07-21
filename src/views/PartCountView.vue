@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref, h } from 'vue';
-import { useMessage, NInput } from 'naive-ui';
+import { useMessage, useNotification, NInput } from 'naive-ui';
 import {
   ArchiveOutline as ArchiveIcon,
   AddOutline as AddIcon,
@@ -21,6 +21,7 @@ import {
 } from '@/utils';
 
 const message = useMessage();
+const notification = useNotification();
 const upload = ref(null);
 const ws = ref(null);
 
@@ -154,7 +155,13 @@ const handlePartCount = () => {
       console.log(res);
       response.value = res.json;
     })
-    .catch((err) => {})
+    .catch((err) => {
+      const msg = typeof err == 'string' ? err : err.message;
+      notification.error({
+        title: '任务失败',
+        content: msg,
+      });
+    })
     .finally(() => {
       loadingPartCount.value = false;
     });
@@ -186,7 +193,13 @@ const handlePartCountOCR = () => {
         images: res.json.data.error_pages[1],
       };
     })
-    .catch((err) => {})
+    .catch((err) => {
+      const msg = typeof err == 'string' ? err : err.message;
+      notification.error({
+        title: '任务失败',
+        content: msg,
+      });
+    })
     .finally(() => {
       loadingPartCount.value = false;
     });
@@ -291,9 +304,7 @@ onUnmounted(() => {
             <n-text style="font-size: 16px">
               点击或者拖动文件到该区域来上传
             </n-text>
-            <n-p depth="3" style="margin: 8px 0 0 0">
-              检查爆炸图和明细表
-            </n-p>
+            <n-p depth="3" style="margin: 8px 0 0 0"> 检查爆炸图和明细表 </n-p>
           </n-upload-dragger>
         </n-upload>
         <n-button type="primary" ghost @click="handleUpload">

@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
-import { useMessage } from 'naive-ui';
+import { useMessage, useNotification } from 'naive-ui';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import { lyla, openWebsocket } from '@/request';
 import {
@@ -17,6 +17,7 @@ import {
 } from '@/utils';
 
 const message = useMessage();
+const notification = useNotification();
 const upload = ref(null);
 const ws = ref(null);
 
@@ -115,7 +116,13 @@ const sendRect = () => {
       console.log(res);
       response.value = res.json;
     })
-    .catch((err) => {})
+    .catch((err) => {
+      const msg = typeof err == 'string' ? err : err.message;
+      notification.error({
+        title: '任务失败',
+        content: msg,
+      });
+    })
     .finally(() => {
       loadingResult.value = false;
     });

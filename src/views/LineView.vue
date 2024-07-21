@@ -1,11 +1,17 @@
 <script setup>
 import { ref } from 'vue';
-import { useMessage } from 'naive-ui';
+import { useMessage, useNotification } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
-import { download, checkFileUploaded, uploadFile, onlyAllowNumber } from '@/utils';
+import {
+  download,
+  checkFileUploaded,
+  uploadFile,
+  onlyAllowNumber,
+} from '@/utils';
 
 const message = useMessage();
+const notification = useNotification();
 const upload = ref(null);
 const ws = ref(null);
 
@@ -75,7 +81,13 @@ const handleCheck = () => {
       console.log(res);
       response.value = res.json;
     })
-    .catch((err) => {})
+    .catch((err) => {
+      const msg = typeof err == 'string' ? err : err.message;
+      notification.error({
+        title: '任务失败',
+        content: msg,
+      });
+    })
     .finally(() => {
       loading.value = false;
     });

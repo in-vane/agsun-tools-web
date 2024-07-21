@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
-import { useMessage } from 'naive-ui';
+import { useMessage, useNotification } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
@@ -13,6 +13,7 @@ import {
 } from '@/utils';
 
 const message = useMessage();
+const notification = useNotification();
 const upload = ref(null);
 const ws = ref([null, null]);
 
@@ -107,7 +108,7 @@ const handleGetCrop = () => {
 
 const handleCompare = () => {
   if (cropend.value.length != 2) {
-    message.info('两张图都需要选择区域，点击缩略图切换！');
+    message.info('两张图都需要选择区域，点击缩略图切换选择区域。');
     return;
   }
   loadingCompare.value = true;
@@ -124,7 +125,13 @@ const handleCompare = () => {
       console.log(res);
       response.value = res.json;
     })
-    .catch((err) => {})
+    .catch((err) => {
+      const msg = typeof err == 'string' ? err : err.message;
+      notification.error({
+        title: '任务失败',
+        content: msg,
+      });
+    })
     .finally(() => {
       loadingCompare.value = false;
     });

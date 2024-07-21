@@ -32,6 +32,10 @@ const { lyla } = createLyla({
         const $message = window['$message'];
         const userStore = useUser();
         const { response } = error;
+        if (!response) {
+          $message.error('任务失败: 网络或服务故障');
+          reject(statusText);
+        }
         const { status, statusText } = response;
         console.log({ status, statusText });
         switch (status) {
@@ -40,7 +44,7 @@ const { lyla } = createLyla({
             location.href = '/login';
             break;
           case 403:
-            $message.error(`没有执行该任务的权限: ${statusText}`);
+            $message.error(`任务失败: 没有权限, ${statusText}`);
             break;
 
           default:
@@ -70,7 +74,7 @@ const openWebsocket = (loading, onopen, onmessage) => {
       loading.value = false;
     };
 
-    websocket.onmessage = onmessage
+    websocket.onmessage = onmessage;
 
     websocket.onerror = (e) => {
       console.log('error: ', e);

@@ -1,6 +1,7 @@
 import {
   create,
   NMessageProvider,
+  NNotificationProvider,
   NDialogProvider,
   NConfigProvider,
   NInput,
@@ -64,6 +65,7 @@ import {
 const naive = create({
   components: [
     NMessageProvider,
+    NNotificationProvider,
     NDialogProvider,
     NConfigProvider,
     NInput,

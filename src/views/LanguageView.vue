@@ -1,6 +1,6 @@
 <script setup>
 import { ref, h } from 'vue';
-import { useMessage, NButton, NInput, NIcon } from 'naive-ui';
+import { useMessage, useNotification, NButton, NInput, NIcon } from 'naive-ui';
 import {
   ArchiveOutline as ArchiveIcon,
   AddOutline as AddIcon,
@@ -16,6 +16,7 @@ import {
 } from '@/utils';
 
 const message = useMessage();
+const notification = useNotification();
 const upload = ref(null);
 const ws = ref(null);
 
@@ -85,7 +86,13 @@ const handleOCR = () => {
       overview.value = res.json.data.result;
       textStart.value = res.json.data.start;
     })
-    .catch((err) => {})
+    .catch((err) => {
+      const msg = typeof err == 'string' ? err : err.message;
+      notification.error({
+        title: '任务失败',
+        content: msg,
+      });
+    })
     .finally(() => {
       loadingOCR.value = false;
     });
@@ -104,7 +111,13 @@ const handleCompare = () => {
       console.log(res);
       response.value = res.json;
     })
-    .catch((err) => {})
+    .catch((err) => {
+      const msg = typeof err == 'string' ? err : err.message;
+      notification.error({
+        title: '任务失败',
+        content: msg,
+      });
+    })
     .finally(() => {
       loadingOCR.value = false;
     });

@@ -142,9 +142,7 @@ const logoutHanlder = async () => {
         content-style="padding: 24px;"
         :native-scrollbar="false"
       >
-        <n-message-provider :max="2">
-          <router-view />
-        </n-message-provider>
+        <router-view />
       </n-layout-content>
     </n-layout>
     <n-drawer v-model:show="show" :width="800">
