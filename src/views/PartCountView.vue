@@ -134,18 +134,19 @@ const handleGetCrop = () => {
 };
 
 const handlePartCount = () => {
-  if (!tablePage.value) {
+  if (!tablePages.value.length) {
     message.error('请正确填写明细表所在的页码数');
     return;
   }
   loadingPartCount.value = true;
   const file = fileList.value[0].file;
+  const page_table = tablePages.value.slice().sort((a, b) => a - b);
   const params = {
     filename: file.name,
     filePath: filePath.value,
     rect: rect.value,
     page_explore: explorePage.value,
-    page_table: tablePage.value,
+    page_table: page_table,
     pair_index: pairIndex.value,
     columnCount: columnCount.value,
   };
@@ -356,15 +357,13 @@ onUnmounted(() => {
         <n-space class="form-box" vertical>
           <n-select v-model:value="mode" :options="sltoptions" />
           <template v-if="mode == MODE_NORMAL">
-            <n-input-group>
-              <n-input-group-label>明细表在第</n-input-group-label>
-              <n-input
-                v-model:value="tablePage"
-                :allow-input="num"
-                type="text"
+            <n-space align="center">
+              <n-input-group-label>明细表所在页码</n-input-group-label>
+              <n-dynamic-tags
+                :input-props="{ allowInput: num }"
+                v-model:value="tablePages"
               />
-              <n-input-group-label>页</n-input-group-label>
-            </n-input-group>
+            </n-space>
             <n-input-group>
               <n-input-group-label>明细表共</n-input-group-label>
               <n-input
