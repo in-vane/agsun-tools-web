@@ -1,13 +1,14 @@
 <script setup>
 import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
-import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
 import { INFO_NO_FILE } from '@/config/const.config';
 import { onlyAllowNumber, checkFileUploaded, uploadFile } from '@/utils';
+import { useFileStore } from '@/store/modules/file';
+
+const fileStore = useFileStore();
 
 const message = useMessage();
-const upload = ref(null);
 
 const ws = ref([null, null]);
 const loadingUpload = ref(false);
@@ -18,7 +19,6 @@ const options = [
   { label: '默认模式', value: 1 },
 ];
 
-const fileList = ref([]);
 const filePath = ref(['', '']);
 const active = ref(false);
 const start = ref(['', '']);
@@ -45,17 +45,17 @@ const onmessage = (e, i) => {
 };
 
 const onopen = (i) => {
-  uploadFile(ws.value[i], fileList.value[i].file);
+  uploadFile(ws.value[i], fileStore.currentFiles[i].file);
 };
 
 const handleUpload = async () => {
-  if (fileList.value.length != 2) {
+  if (fileStore.currentFiles.length != 2) {
     message.info(INFO_NO_FILE);
     return;
   }
   let record = null;
   for (let i = 0; i < 2; i++) {
-    record = await checkFileUploaded(fileList.value[i].file);
+    record = await checkFileUploaded(fileStore.currentFiles[i].file);
     if (record) {
       filePath.value[i] = record.file_path;
       message.info(`文件${i + 1}已上传`);
@@ -100,38 +100,7 @@ const handleCompare = () => {
 <template>
   <n-space vertical>
     <!-- upload -->
-    <div>
-      <n-spin :show="loadingUpload">
-        <n-h3 prefix="bar">1. 文档对比(文字模式), 请选择文件上传</n-h3>
-        <n-upload
-          multiple
-          ref="upload"
-          accept=".pdf"
-          :max="2"
-          :default-upload="false"
-          v-model:file-list="fileList"
-          :disabled="loadingUpload"
-          @change="(data) => (fileList = data.fileList)"
-        >
-          <n-upload-dragger>
-            <div style="margin-bottom: 12px">
-              <n-icon size="48" :depth="3">
-                <archive-icon />
-              </n-icon>
-            </div>
-            <n-text style="font-size: 16px">
-              点击或者拖动文件到该区域来上传
-            </n-text>
-            <n-p depth="3" style="margin: 8px 0 0 0">
-              按页检查两份pdf中不一致的部分
-            </n-p>
-          </n-upload-dragger>
-        </n-upload>
-        <n-button type="primary" ghost @click="handleUpload">
-          上传文件
-        </n-button>
-      </n-spin>
-    </div>
+    <n-button type="primary" ghost @click="handleUpload"> 上传文件 </n-button>
     <!-- result -->
     <div>
       <n-spin :show="loadingCompare">

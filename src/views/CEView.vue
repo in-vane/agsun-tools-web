@@ -1,17 +1,17 @@
 <script setup>
 import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
-import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
 import { INFO_NO_FILE } from '@/config/const.config';
 import { onlyAllowNumber, checkFileUploaded, uploadFile } from '@/utils';
+import { useFileStore } from '@/store/modules/file';
+
+const fileStore = useFileStore();
 
 const message = useMessage();
-const upload = ref(null);
 
 const ws = ref([null, null]);
 const loadingUpload = ref(false);
-const fileList = ref([]);
 const filePath = ref(['', '']);
 
 const mode = ref(0);
@@ -42,17 +42,17 @@ const onmessage = (e, i) => {
 };
 
 const onopen = (i) => {
-  uploadFile(ws.value[i], fileList.value[i].file);
+  uploadFile(ws.value[i], fileStore.currentFiles[i].file);
 };
 
 const handleUpload = async () => {
-  if (!fileList.value.length) {
+  if (!fileStore.currentFiles.length) {
     message.info(INFO_NO_FILE);
     return;
   }
   let record = null;
   for (let i = 0; i < 2; i++) {
-    record = await checkFileUploaded(fileList.value[i].file);
+    record = await checkFileUploaded(fileStore.currentFiles[i].file);
     if (record) {
       filePath.value[i] = record.file_path;
       message.info(`文件${i + 1}已上传`);
@@ -86,47 +86,22 @@ const compare = () => {
 
 <template>
   <div>
-    <n-h3 prefix="bar">1. 上传PDF</n-h3>
     <n-spin :show="loading">
-      <n-upload
-        multiple
-        ref="upload"
-        :max="2"
-        :default-upload="false"
-        v-model:file-list="fileList"
-        @change="(data) => (fileList = data.fileList)"
-      >
-        <n-upload-dragger>
-          <div style="margin-bottom: 12px">
-            <n-icon size="48" :depth="3">
-              <archive-icon />
-            </n-icon>
-          </div>
-          <n-text style="font-size: 16px">
-            点击或者拖动文件到该区域来上传
-          </n-text>
-          <n-p depth="3" style="margin: 8px 0 0 0">
-            检查CE表中对应位置的错误项
-          </n-p>
-        </n-upload-dragger>
-      </n-upload>
-      <n-space vertical>
-        <n-space>
-          <n-select v-model:value="mode" :options="options" />
-          <n-input-group>
-            <n-input-group-label>第</n-input-group-label>
-            <n-input
-              type="text"
-              placeholder="1"
-              v-model:value="sheet"
-              :allow-input="onlyAllowNumber"
-              autosize
-            />
-            <n-input-group-label>张Sheet表</n-input-group-label>
-          </n-input-group>
-          <n-button type="primary" ghost @click="handleUpload"> 上传 </n-button>
-          <n-button type="primary" ghost @click="compare"> 开始对比 </n-button>
-        </n-space>
+      <n-space>
+        <n-select v-model:value="mode" :options="options" />
+        <n-input-group>
+          <n-input-group-label>第</n-input-group-label>
+          <n-input
+            type="text"
+            placeholder="1"
+            v-model:value="sheet"
+            :allow-input="onlyAllowNumber"
+            autosize
+          />
+          <n-input-group-label>张Sheet表</n-input-group-label>
+        </n-input-group>
+        <n-button type="primary" ghost @click="handleUpload"> 上传 </n-button>
+        <n-button type="primary" ghost @click="compare"> 开始对比 </n-button>
       </n-space>
     </n-spin>
     <n-divider />

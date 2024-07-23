@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
-import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
 import {
   download,
@@ -9,12 +8,13 @@ import {
   uploadFile,
   onlyAllowNumber,
 } from '@/utils';
+import { useFileStore } from '@/store/modules/file';
+
+const fileStore = useFileStore();
 
 const message = useMessage();
-const upload = ref(null);
 const ws = ref(null);
 
-const fileList = ref([]);
 const filePath = ref('');
 const MODE_CHECK = 0;
 const MODE_FIX = 1;
@@ -45,15 +45,15 @@ const onmessage = (e) => {
 };
 
 const onopen = (e) => {
-  uploadFile(ws.value, fileList.value[0].file);
+  uploadFile(ws.value, fileStore.currentFiles[0].file);
 };
 
 const handleUpload = async () => {
-  if (!fileList.value.length) {
+  if (!fileStore.currentFiles.length) {
     message.info('请选择文件');
     return;
   }
-  const record = await checkFileUploaded(fileList.value[0].file);
+  const record = await checkFileUploaded(fileStore.currentFiles[0].file);
   if (record) {
     filePath.value = record.file_path;
     message.success('已上传');
@@ -87,7 +87,7 @@ const handleCheck = () => {
 };
 
 const handleDownload = () => {
-  const file = fileList.value[0].file;
+  const file = fileStore.currentFiles[0].file;
   const filename = file.name;
   download(filename, response.value.data.path);
 };
@@ -96,30 +96,7 @@ const handleDownload = () => {
 <template>
   <n-space vertical>
     <!-- upload -->
-    <n-spin :show="loading">
-      <n-h3 prefix="bar">1. 上传PDF</n-h3>
-      <n-upload
-        ref="upload"
-        accept=".pdf"
-        :max="1"
-        :default-upload="false"
-        v-model:file-list="fileList"
-        @change="(data) => (fileList = data.fileList)"
-      >
-        <n-upload-dragger>
-          <div style="margin-bottom: 12px">
-            <n-icon size="48" :depth="3">
-              <archive-icon />
-            </n-icon>
-          </div>
-          <n-text style="font-size: 16px">
-            点击或者拖动文件到该区域来上传
-          </n-text>
-          <n-p depth="3" style="margin: 8px 0 0 0"> 检查文件中线的粗细 </n-p>
-        </n-upload-dragger>
-      </n-upload>
-      <n-button type="primary" ghost @click="handleUpload"> 上传文件 </n-button>
-    </n-spin>
+    <n-button type="primary" ghost @click="handleUpload"> 上传文件 </n-button>
     <div>
       <n-h3 prefix="bar">2. 参数选择</n-h3>
       <n-space align="center">

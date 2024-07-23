@@ -4,12 +4,14 @@ import { useMessage } from 'naive-ui';
 import { lyla, openWebsocket } from '@/request';
 import { INFO_NO_FILE, WEBSOCKET_TYPE } from '@/config/const.config';
 import { checkFileUploaded, uploadFile, getImages } from '@/utils';
+import { useFileStore } from '@/store/modules/file';
+
+const fileStore = useFileStore();
 
 const message = useMessage();
 
 const ws = ref(null);
 const loadingUpload = ref(false);
-const fileList = ref([]);
 const filePath = ref('');
 const images = ref([]);
 const current = ref(0);
@@ -55,7 +57,7 @@ const onopen = (type) => {
   current.value = 0;
   images.value = [];
   if (type == WEBSOCKET_TYPE.UPLOAD) {
-    uploadFile(ws.value, fileList.value[0].file);
+    uploadFile(ws.value, fileStore.currentFiles[0].file);
   }
   if (type == WEBSOCKET_TYPE.PDF2IMG) {
     getImages(ws.value, filePath.value);
@@ -63,12 +65,12 @@ const onopen = (type) => {
 };
 
 const handleUploadPDF = async () => {
-  if (!fileList.value.length) {
+  if (!fileStore.currentFiles.length) {
     message.info(INFO_NO_FILE);
     return;
   }
   let type = WEBSOCKET_TYPE.UPLOAD;
-  const record = await checkFileUploaded(fileList.value[0].file);
+  const record = await checkFileUploaded(fileStore.currentFiles[0].file);
   if (record) {
     filePath.value = record.file_path;
     type = WEBSOCKET_TYPE.PDF2IMG;
@@ -108,7 +110,7 @@ const captureImage = () => {
 };
 
 const handleCompare = () => {
-  if (!fileList.value.length) {
+  if (!fileStore.currentFiles.length) {
     message.info(INFO_NO_FILE);
     return;
   }
@@ -196,15 +198,6 @@ onBeforeUnmount(() => {
   <div>
     <!-- upload -->
     <n-spin :show="loadingUpload" content-class="upload-spin-content">
-      <n-h3 prefix="bar">1. 上传PDF</n-h3>
-      <n-upload
-        :max="1"
-        :default-upload="false"
-        v-model:file-list="fileList"
-        @change="(data) => (fileList = data.fileList)"
-      >
-        <n-button>选择文件</n-button>
-      </n-upload>
       <n-button
         type="primary"
         ghost
@@ -279,14 +272,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.upload-spin-content {
-  position: relative;
-}
-.upload-btn {
-  position: absolute;
-  top: 49px;
-  left: 91px;
-}
 .preview-box {
   display: flex;
   gap: 12px;

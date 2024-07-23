@@ -17,6 +17,7 @@ import {
 } from '@vicons/ionicons5';
 import { renderIcon } from '@/utils';
 import { useUserStore } from '@/store/modules/user';
+import { useFileStore } from '@/store/modules/file';
 
 import Doc from '@/views/HomeView.vue';
 import agsun from '@/assets/agsun.jpeg';
@@ -35,6 +36,8 @@ import CHis from '@/views/History/HistoryView.vue';
 
 const userStore = useUserStore();
 const userInfo = userStore.getUserInfo || {};
+const fileStore = useFileStore();
+const historyFiles = fileStore.getHistoryFiles;
 
 const renderLabel = (path, label) => () =>
   h(RouterLink, { to: { path } }, { default: () => label });
@@ -108,11 +111,16 @@ const menuOptions = [
   },
 ];
 
+const columns = [{ title: '文件名', key: 'name' }];
+
 const routeName = ref('');
 const route = useRoute();
 const router = useRouter();
 
 const show = ref(false);
+
+const fileList = ref([]);
+const loading = ref(false);
 
 const currentTab = ref('');
 const panels = ref([]);
@@ -123,7 +131,7 @@ const LAYOUT_STYLE = {
   flexDirection: 'column',
 };
 
-const handleClose = (key) => {
+const onCloseTab = (key) => {
   const p = panels.value;
   const index = p.findIndex((_) => _.key == key);
   p.splice(index, 1);
@@ -182,6 +190,24 @@ const getComponent = (key) => {
   }
 };
 
+const onUpdateUpload = (data) => {
+  console.log(data);
+  fileList.value = data.fileList;
+  fileStore.updateFiles(data.fileList);
+};
+
+const rowProps = (row) => {
+  return {
+    style: 'cursor: pointer;',
+    onClick: () => {
+      if (fileList.value.length < 2) {
+        fileList.value.push(row);
+        fileStore.updateFiles(fileList.value);
+      }
+    },
+  };
+};
+
 watchEffect(() => {
   routeName.value = route.name;
   currentTab.value = route.name;
@@ -233,12 +259,33 @@ onMounted(() => {
         content-style="padding: 24px;"
         :native-scrollbar="false"
       >
+        <n-h3 prefix="bar">1. 上传PDF</n-h3>
+        <n-flex>
+          <n-data-table
+            :columns="columns"
+            :data="historyFiles"
+            row-class-name="file-table-row"
+            :row-props="rowProps"
+          />
+          <n-upload
+            multiple
+            ref="upload"
+            :max="2"
+            :default-upload="false"
+            v-model:file-list="fileList"
+            :disabled="loading"
+            @change="onUpdateUpload"
+          >
+            <n-button>选择文件</n-button>
+          </n-upload>
+        </n-flex>
+        <n-divider />
         <n-tabs
           v-model:value="currentTab"
           type="card"
           :closable="panels.length > 1"
           tab-style="min-width: 80px;"
-          @close="handleClose"
+          @close="onCloseTab"
           @update:value="onUpdateTab"
         >
           <n-tab-pane
@@ -271,5 +318,11 @@ onMounted(() => {
   color: rgb(118, 124, 130);
   background: none;
   text-align: center;
+}
+.n-data-table {
+  width: 70%;
+}
+.n-upload {
+  flex: 1;
 }
 </style>

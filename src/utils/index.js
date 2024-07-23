@@ -57,7 +57,6 @@ export const getMD5 = (file) =>
     reader.onload = (e) => {
       const arrayBuffer = reader.result;
       const md5 = SparkMD5.ArrayBuffer.hash(arrayBuffer);
-      console.log(md5);
       resolve(md5);
     };
     reader.onerror = (e) => {
@@ -75,7 +74,7 @@ export const checkFileUploaded = async (file) => {
   const md5 = await getMD5(file);
   const response = await lyla.post('/isFileUploaded', { json: { md5 } });
   let record = response.json.data?.result;
-  console.log(record);
+
   return record;
 };
 

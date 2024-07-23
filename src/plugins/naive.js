@@ -56,6 +56,7 @@ import {
   NDrawerContent,
   NTabs,
   NTabPane,
+  NDivider,
 } from 'naive-ui';
 
 // https://www.naiveui.com/en-US/os-theme/docs/import-on-demand
@@ -117,6 +118,7 @@ const naive = create({
     NDrawerContent,
     NTabs,
     NTabPane,
+    NDivider,
   ],
 });
 

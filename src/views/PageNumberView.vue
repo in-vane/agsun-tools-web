@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue';
-import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { useMessage } from 'naive-ui';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import { lyla, openWebsocket } from '@/request';
@@ -15,12 +14,13 @@ import {
   getImages,
   onlyAllowNumber,
 } from '@/utils';
+import { useFileStore } from '@/store/modules/file';
+
+const fileStore = useFileStore();
 
 const message = useMessage();
-const upload = ref(null);
 const ws = ref(null);
 
-const fileList = ref([]);
 const filePath = ref('');
 const images = ref([]);
 const current = ref(0);
@@ -69,7 +69,7 @@ const onopen = (type) => {
   images.value = [];
   rect.value = [];
   if (type == WEBSOCKET_TYPE.UPLOAD) {
-    uploadFile(ws.value, fileList.value[0].file);
+    uploadFile(ws.value, fileStore.currentFiles[0].file);
   }
   if (type == WEBSOCKET_TYPE.PDF2IMG) {
     getImages(ws.value, filePath.value);
@@ -77,12 +77,12 @@ const onopen = (type) => {
 };
 
 const handleUpload = async () => {
-  if (!fileList.value.length) {
+  if (!fileStore.currentFiles.length) {
     message.info(INFO_NO_FILE);
     return;
   }
   let type = WEBSOCKET_TYPE.UPLOAD;
-  const record = await checkFileUploaded(fileList.value[0].file);
+  const record = await checkFileUploaded(fileStore.currentFiles[0].file);
   if (record) {
     filePath.value = record.file_path;
     type = WEBSOCKET_TYPE.PDF2IMG;
@@ -139,31 +139,7 @@ const options = {
 <template>
   <n-space vertical>
     <!-- upload -->
-    <n-spin :show="loadingUpload">
-      <n-h3 prefix="bar">1. 选择要检查的PDF文件</n-h3>
-      <n-upload
-        ref="upload"
-        :max="1"
-        :default-upload="false"
-        v-model:file-list="fileList"
-        @change="(data) => (fileList = data.fileList)"
-      >
-        <n-upload-dragger>
-          <div style="margin-bottom: 12px">
-            <n-icon size="48" :depth="3">
-              <archive-icon />
-            </n-icon>
-          </div>
-          <n-text style="font-size: 16px">
-            点击或者拖动文件到该区域来上传
-          </n-text>
-          <n-p depth="3" style="margin: 8px 0 0 0">
-            检查页码的缺失、错误等问题
-          </n-p>
-        </n-upload-dragger>
-      </n-upload>
-      <n-button type="primary" ghost @click="handleUpload"> 上传文件 </n-button>
-    </n-spin>
+    <n-button type="primary" ghost @click="handleUpload"> 上传文件 </n-button>
     <!-- crop -->
     <n-spin :show="loadingResult">
       <n-h3 prefix="bar">2. 请拉取页码范围高度</n-h3>

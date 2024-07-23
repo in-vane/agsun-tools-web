@@ -2,7 +2,6 @@
 import { onMounted, onUnmounted, ref, h } from 'vue';
 import { useMessage, NInput } from 'naive-ui';
 import {
-  ArchiveOutline as ArchiveIcon,
   AddOutline as AddIcon,
   TrashOutline as TrashIcon,
 } from '@vicons/ionicons5';
@@ -19,14 +18,15 @@ import {
   getImages,
   uploadFile,
 } from '@/utils';
+import { useFileStore } from '@/store/modules/file';
+
+const fileStore = useFileStore();
 
 const message = useMessage();
-const upload = ref(null);
 const ws = ref(null);
 
 const jump = ref(null);
 
-const fileList = ref([]);
 const filePath = ref('');
 const loadingUpload = ref(false);
 
@@ -104,7 +104,7 @@ const onopen = (type) => {
   images.value = [];
   cropend.value = '';
   if (type == WEBSOCKET_TYPE.UPLOAD) {
-    uploadFile(ws.value, fileList.value[0].file);
+    uploadFile(ws.value, fileStore.currentFiles[0].file);
   }
   if (type == WEBSOCKET_TYPE.PDF2IMG) {
     getImages(ws.value, filePath.value);
@@ -112,12 +112,12 @@ const onopen = (type) => {
 };
 
 const handleUpload = async () => {
-  if (!fileList.value.length) {
+  if (!fileStore.currentFiles.length) {
     message.info(INFO_NO_FILE);
     return;
   }
   let type = WEBSOCKET_TYPE.UPLOAD;
-  const record = await checkFileUploaded(fileList.value[0].file);
+  const record = await checkFileUploaded(fileStore.currentFiles[0].file);
   if (record) {
     filePath.value = record.file_path;
     message.success('已上传');
@@ -140,7 +140,7 @@ const handlePartCount = () => {
     return;
   }
   loadingPartCount.value = true;
-  const file = fileList.value[0].file;
+  const file = fileStore.currentFiles[0].file;
   const page_table = tablePages.value.slice().sort((a, b) => a - b);
   const params = {
     filename: file.name,
@@ -169,7 +169,7 @@ const handlePartCountOCR = () => {
     return;
   }
   loadingPartCount.value = true;
-  const file = fileList.value[0].file;
+  const file = fileStore.currentFiles[0].file;
   const page_table = tablePages.value.slice().sort((a, b) => a - b);
   const params = {
     filename: file.name,
@@ -274,34 +274,7 @@ onUnmounted(() => {
 <template>
   <n-space vertical>
     <!-- upload -->
-    <div>
-      <n-h3 prefix="bar">1. 上传PDF</n-h3>
-      <n-spin :show="loadingUpload">
-        <n-upload
-          ref="upload"
-          accept=".pdf"
-          :max="1"
-          :default-upload="false"
-          v-model:file-list="fileList"
-          @change="(data) => (fileList = data.fileList)"
-        >
-          <n-upload-dragger>
-            <div style="margin-bottom: 12px">
-              <n-icon size="48" :depth="3">
-                <archive-icon />
-              </n-icon>
-            </div>
-            <n-text style="font-size: 16px">
-              点击或者拖动文件到该区域来上传
-            </n-text>
-            <n-p depth="3" style="margin: 8px 0 0 0"> 检查爆炸图和明细表 </n-p>
-          </n-upload-dragger>
-        </n-upload>
-        <n-button type="primary" ghost @click="handleUpload">
-          开始转换
-        </n-button>
-      </n-spin>
-    </div>
+    <n-button type="primary" ghost @click="handleUpload"> 开始转换 </n-button>
     <!-- preview -->
     <n-spin :show="loadingPartCount">
       <n-flex align="center">

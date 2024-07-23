@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useMessage } from 'naive-ui';
-import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { lyla, openWebsocket } from '@/request';
 import VuePictureCropper, { cropper } from 'vue-picture-cropper';
 import { WEBSOCKET_TYPE, CROP_BOX_STYLE } from '@/config/const.config';
@@ -11,9 +10,11 @@ import {
   uploadFile,
   getImages,
 } from '@/utils';
+import { useFileStore } from '@/store/modules/file';
+
+const fileStore = useFileStore();
 
 const message = useMessage();
-const upload = ref(null);
 const ws = ref([null, null]);
 
 const jump = ref([null, null]);
@@ -68,7 +69,7 @@ const onopen = (type, i) => {
   current.value[i] = 0;
   images.value[i] = [];
   if (type == WEBSOCKET_TYPE.UPLOAD) {
-    uploadFile(ws.value[i], fileList.value[i].file);
+    uploadFile(ws.value[i], fileStore.currentFiles[i].file);
   }
   if (type == WEBSOCKET_TYPE.PDF2IMG) {
     const options = genOptions(i);
@@ -77,14 +78,14 @@ const onopen = (type, i) => {
 };
 
 const handleUpload = async () => {
-  if (fileList.value.length != 2) {
+  if (fileStore.currentFiles.length != 2) {
     message.info('请选择2份文件');
     return;
   }
   let record = null;
   let type = WEBSOCKET_TYPE.UPLOAD;
   for (let i = 0; i < 2; i++) {
-    record = await checkFileUploaded(fileList.value[i].file);
+    record = await checkFileUploaded(fileStore.currentFiles[i].file);
     if (record) {
       filePath.value[i] = record.file_path;
       type = WEBSOCKET_TYPE.PDF2IMG;
@@ -158,31 +159,6 @@ onUnmounted(() => {
   <n-space vertical>
     <!-- upload -->
     <div>
-      <n-h3 prefix="bar">1. 上传PDF</n-h3>
-      <n-upload
-        multiple
-        ref="upload"
-        accept=".pdf"
-        :max="2"
-        :default-upload="false"
-        v-model:file-list="fileList"
-        :disabled="loadingUpload"
-        @change="(data) => (fileList = data.fileList)"
-      >
-        <n-upload-dragger>
-          <div style="margin-bottom: 12px">
-            <n-icon size="48" :depth="3">
-              <archive-icon />
-            </n-icon>
-          </div>
-          <n-text style="font-size: 16px">
-            点击或者拖动文件到该区域来上传
-          </n-text>
-          <n-p depth="3" style="margin: 8px 0 0 0">
-            检查两份pdf中爆炸图与安装图不一致的部分
-          </n-p>
-        </n-upload-dragger>
-      </n-upload>
       <n-space align="center">
         <n-select v-model:value="mode" :options="selectOptions" />
         <n-switch v-model:value="active" size="large">
