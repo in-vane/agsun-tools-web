@@ -44,7 +44,6 @@ const sltoptions = [
 const mode = ref(MODE_NORMAL);
 
 const explorePage = ref(0);
-const tablePage = ref('1');
 const tablePages = ref([]);
 const columnCount = ref('6');
 const pairIndex = ref([
@@ -155,7 +154,11 @@ const handlePartCount = () => {
     .post('/partCount', { json: params })
     .then((res) => {
       console.log(res);
-      response.value = res.json;
+      response.value = {
+        ...res.json,
+        pages: res.json.data.error_pages[0],
+        images: res.json.data.error_pages[1],
+      };
     })
     .catch((err) => {})
     .finally(() => {
