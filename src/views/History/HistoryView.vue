@@ -4,12 +4,16 @@ import { useMessage, NButton, NIcon, NSpace, NA } from 'naive-ui';
 import { DocumentOutline as IDoc } from '@vicons/ionicons5';
 import { lyla } from '@/request';
 import { download } from '@/utils';
+import { useUserStore } from '@/store/modules/user';
 import { taskOptions, taskMap, rules, data } from './config';
+
+const userStore = useUserStore();
+const userInfo = userStore.getUserInfo || {};
 
 const message = useMessage();
 const formRef = ref(null);
 const formValue = ref({
-  username: 'admin',
+  username: userInfo.name || 'admin',
   datetime: new Date().getTime(),
   type_id: '001',
   file_path: [],
