@@ -14,7 +14,7 @@ const message = useMessage();
 const formRef = ref(null);
 const formValue = ref({
   username: userInfo.name || 'admin',
-  datetime: new Date().getTime(),
+  datetime: [Date.now() - 86400000, Date.now()],
   type_id: '001',
   file_path: [],
 });
@@ -169,7 +169,10 @@ const columns = [
         <n-input v-model:value="formValue.username" placeholder="输入姓名" />
       </n-form-item>
       <n-form-item label="时间" path="datetime">
-        <n-date-picker v-model:value="formValue.datetime" type="date" />
+        <n-date-picker
+          v-model:value="formValue.datetime"
+          type="datetimerange"
+        />
       </n-form-item>
       <n-form-item label="功能" path="type_id">
         <n-select

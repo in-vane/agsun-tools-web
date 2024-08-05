@@ -36,7 +36,7 @@ export const rules = {
     trigger: 'blur',
   },
   datetime: {
-    type: 'number',
+    type: "array",
     required: true,
     message: '请选择时间',
     trigger: ['blur', 'change'],
