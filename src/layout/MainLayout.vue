@@ -14,6 +14,7 @@ import {
   LogOutOutline as ILogout,
   PencilOutline as ILine,
   AlbumsOutline as IAlbums,
+  ArchiveOutline as IArchive,
 } from '@vicons/ionicons5';
 import { renderIcon } from '@/utils';
 import { useUserStore } from '@/store/modules/user';
@@ -111,7 +112,15 @@ const menuOptions = [
   },
 ];
 
-const columns = [{ title: '文件名', key: 'name' }];
+const columns = [
+  {
+    title: '历史文件',
+    key: 'name',
+    ellipsis: {
+      tooltip: true,
+    },
+  },
+];
 
 const routeName = ref('');
 const route = useRoute();
@@ -261,12 +270,6 @@ onMounted(() => {
       >
         <n-h3 prefix="bar">1. 上传PDF</n-h3>
         <n-flex>
-          <n-data-table
-            :columns="columns"
-            :data="historyFiles"
-            row-class-name="file-table-row"
-            :row-props="rowProps"
-          />
           <n-upload
             multiple
             ref="upload"
@@ -276,8 +279,26 @@ onMounted(() => {
             :disabled="loading"
             @change="onUpdateUpload"
           >
-            <n-button>选择文件</n-button>
+            <n-upload-dragger>
+              <div style="margin-bottom: 12px">
+                <n-icon size="48" :depth="3">
+                  <IArchive />
+                </n-icon>
+              </div>
+              <n-text style="font-size: 16px">
+                点击或者拖动文件到该区域来上传
+              </n-text>
+              <n-p depth="3" style="margin: 8px 0 0 0">
+                或选择右侧表格中的历史文件
+              </n-p>
+            </n-upload-dragger>
           </n-upload>
+          <n-data-table
+            :columns="columns"
+            :data="historyFiles"
+            row-class-name="file-table-row"
+            :row-props="rowProps"
+          />
         </n-flex>
         <n-divider />
         <n-tabs
@@ -320,7 +341,7 @@ onMounted(() => {
   text-align: center;
 }
 .n-data-table {
-  width: 70%;
+  width: 10%;
 }
 .n-upload {
   flex: 1;

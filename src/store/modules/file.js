@@ -32,9 +32,10 @@ export const useFileStore = defineStore({
         if (!isHisHas) {
           this.historyFiles.push(item);
         }
-        if (this.historyFiles.length > 10) {
+        if (this.historyFiles.length > 5) {
           this.historyFiles.shift();
         }
+        console.log(this.historyFiles)
       }
     },
     clearCurrentFiles() {
