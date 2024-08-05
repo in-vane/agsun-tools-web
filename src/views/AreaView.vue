@@ -278,7 +278,7 @@ onUnmounted(() => {
             <n-button
               type="primary"
               ghost
-              @click="() => handlePreviewClick(0, jump[1] - 1)"
+              @click="() => handlePreviewClick(1, jump[1] - 1)"
             >
               快速选择
             </n-button>
