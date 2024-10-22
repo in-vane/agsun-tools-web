@@ -29,7 +29,7 @@ const response = ref({
   msg: '',
   data: {
     pages: [],
-    imgs_base64: [],
+    image_paths: [],
     error_msg: '',
   },
 });
@@ -172,7 +172,7 @@ const handleCompare = () => {
                 :offset="[-10, 10]"
               >
                 <n-image
-                  :src="response.data.imgs_base64[i]"
+                  :src="response.data.image_paths[i]"
                   alt="image"
                   height="200px"
                   @click="() => (current = i)"
