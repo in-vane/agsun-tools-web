@@ -16,6 +16,8 @@ import {
 } from '@/utils';
 import { useFileStore } from '@/store/modules/file';
 
+const showModal = ref(false);
+
 const fileStore = useFileStore();
 
 const message = useMessage();
@@ -168,7 +170,15 @@ const options = {
           />
           <n-input-group-label>页</n-input-group-label>
         </n-input-group>
-        <n-button type="primary" ghost @click="sendRect"> 开始任务 </n-button>
+        <n-button
+          v-if="mode == MODE_RECT"
+          type="primary"
+          ghost
+          @click="() => (showModal = true)"
+        >
+          选择区域
+        </n-button>
+        <n-button type="primary" @click="sendRect"> 开始任务 </n-button>
       </n-space>
       <div class="scroll-box">
         <n-scrollbar class="n-scrollbar" x-scrollable trigger="none">
@@ -200,13 +210,13 @@ const options = {
           />
         </div>
       </div>
-      <div class="crop-box" v-if="mode == MODE_RECT">
+      <!-- <div class="crop-box" v-if="mode == MODE_RECT">
         <vue-picture-cropper
           :boxStyle="CROP_BOX_STYLE"
           :img="images[current]"
           :options="options"
         />
-      </div>
+      </div> -->
     </n-spin>
     <!-- result -->
     <div v-show="response.code != null">
@@ -228,6 +238,22 @@ const options = {
       </n-image-group>
     </div>
   </n-space>
+  <n-modal v-model:show="showModal">
+    <n-card
+      title="区域选择"
+      role="dialog"
+      aria-modal="true"
+      style="width: 800px"
+    >
+      <div class="crop-box">
+        <vue-picture-cropper
+          :boxStyle="CROP_BOX_STYLE"
+          :img="images[current]"
+          :options="options"
+        />
+      </div>
+    </n-card>
+  </n-modal>
 </template>
 
 <style scoped>

@@ -12,6 +12,8 @@ import {
 } from '@/utils';
 import { useFileStore } from '@/store/modules/file';
 
+const showModal = ref(false);
+
 const fileStore = useFileStore();
 
 const message = useMessage();
@@ -215,18 +217,23 @@ onUnmounted(() => {
         <div class="box-divider-item">
           <n-flex align="center">
             <n-h3 prefix="bar"> 文件1中的图像预览 </n-h3>
-            <n-input
-              v-model:value="jump[0]"
-              :allow-input="num"
-              autosize
-              placeholder="页数"
-            />
-            <n-button
-              type="primary"
-              ghost
-              @click="() => handlePreviewClick(0, jump[0] - 1)"
-            >
-              快速选择
+            <n-input-group>
+              <n-input
+                v-model:value="jump[0]"
+                :allow-input="num"
+                autosize
+                placeholder="页数"
+              />
+              <n-button
+                type="primary"
+                ghost
+                @click="() => handlePreviewClick(0, jump[0] - 1)"
+              >
+                快速选择
+              </n-button>
+            </n-input-group>
+            <n-button type="primary" @click="() => (showModal = true)">
+              选择区域
             </n-button>
           </n-flex>
           <div class="scroll-box">
@@ -269,18 +276,23 @@ onUnmounted(() => {
         <div class="box-divider-item">
           <n-flex align="center">
             <n-h3 prefix="bar"> 文件2中的图像预览 </n-h3>
-            <n-input
-              v-model:value="jump[1]"
-              :allow-input="num"
-              autosize
-              placeholder="页数"
-            />
-            <n-button
-              type="primary"
-              ghost
-              @click="() => handlePreviewClick(1, jump[1] - 1)"
-            >
-              快速选择
+            <n-input-group>
+              <n-input
+                v-model:value="jump[1]"
+                :allow-input="num"
+                autosize
+                placeholder="页数"
+              />
+              <n-button
+                type="primary"
+                ghost
+                @click="() => handlePreviewClick(1, jump[1] - 1)"
+              >
+                快速选择
+              </n-button>
+            </n-input-group>
+            <n-button type="primary" @click="() => (showModal = true)">
+              选择区域
             </n-button>
           </n-flex>
           <div class="scroll-box">
@@ -323,8 +335,9 @@ onUnmounted(() => {
       </div>
     </n-spin>
     <!-- result -->
+    <n-button type="primary" @click="handleCompare"> 开始对比 </n-button>
     <div class="box-divider">
-      <div class="box-divider-item">
+      <!-- <div class="box-divider-item">
         <n-space justify="space-between">
           <n-h3 prefix="bar">3. 选取对比区域</n-h3>
           <n-button type="primary" ghost @click="handleCompare">
@@ -338,11 +351,11 @@ onUnmounted(() => {
             :options="options"
           />
         </div>
-      </div>
+      </div> -->
       <div class="box-divider-item">
         <n-spin :show="loadingCompare">
           <n-space justify="space-between">
-            <n-h3 prefix="bar">4. 对比结果(以文件1的区域为参照)</n-h3>
+            <n-h3 prefix="bar">对比结果(以文件1的区域为参照)</n-h3>
             <!-- <n-button type="primary" ghost @click="handleSaveResult">
               保存结果
             </n-button> -->
@@ -359,6 +372,22 @@ onUnmounted(() => {
       </div>
     </div>
   </n-space>
+  <n-modal v-model:show="showModal">
+    <n-card
+      title="区域选择"
+      role="dialog"
+      aria-modal="true"
+      style="width: 800px"
+    >
+      <div class="crop-box">
+        <vue-picture-cropper
+          :boxStyle="CROP_BOX_STYLE"
+          :img="images[current[0]][current[1]]"
+          :options="options"
+        />
+      </div>
+    </n-card>
+  </n-modal>
 </template>
 
 <style scoped>

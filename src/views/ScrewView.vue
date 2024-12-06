@@ -20,6 +20,8 @@ import {
 } from '@/utils';
 import { useFileStore } from '@/store/modules/file';
 
+const showModal = ref(false);
+
 const fileStore = useFileStore();
 
 const message = useMessage();
@@ -250,14 +252,19 @@ const options = {
     <n-spin :show="loadingOCR">
       <n-flex align="center">
         <n-h3 prefix="bar">2. 选取螺丝表</n-h3>
-        <n-input
-          v-model:value="jump"
-          :allow-input="num"
-          autosize
-          placeholder="页数"
-        />
-        <n-button type="primary" ghost @click="() => (current = jump - 1)">
-          快速选择
+        <n-input-group>
+          <n-input
+            v-model:value="jump"
+            :allow-input="num"
+            autosize
+            placeholder="页数"
+          />
+          <n-button type="primary" ghost @click="() => (current = jump - 1)">
+            快速选择
+          </n-button>
+        </n-input-group>
+        <n-button type="primary" @click="() => (showModal = true)">
+          选择区域
         </n-button>
       </n-flex>
       <div class="scroll-box">
@@ -281,18 +288,31 @@ const options = {
           </div>
         </n-scrollbar>
       </div>
-      <div class="crop-box">
+      <!-- <div class="crop-box">
         <vue-picture-cropper
           :boxStyle="CROP_BOX_STYLE"
           :img="images[current]"
           :options="options"
         />
-      </div>
-      <n-button type="primary" ghost @click="handleOCR"> 识别螺丝包 </n-button>
+      </div> -->
     </n-spin>
     <n-spin :show="loadingRes">
       <n-h3 prefix="bar">3. 检查</n-h3>
       <n-space>
+        <div>
+          <div class="preview-crop">
+            <n-image
+              v-show="cropend"
+              :src="cropend"
+              height="120px"
+              width="100%"
+              alt="image"
+            />
+          </div>
+          <n-button type="primary" ghost @click="handleOCR">
+            识别螺丝包
+          </n-button>
+        </div>
         <n-space vertical>
           <n-data-table :columns="OCRColumns" :data="overview" />
           <n-button block @click="addItem">
@@ -303,15 +323,6 @@ const options = {
             </template>
           </n-button>
         </n-space>
-        <div class="preview-crop">
-          <n-image
-            v-show="cropend"
-            :src="cropend"
-            height="120px"
-            width="100%"
-            alt="image"
-          />
-        </div>
         <n-input-group>
           <n-input-group-label>步骤图从</n-input-group-label>
           <n-input
@@ -351,6 +362,22 @@ const options = {
       />
     </div>
   </n-space>
+  <n-modal v-model:show="showModal">
+    <n-card
+      title="区域选择"
+      role="dialog"
+      aria-modal="true"
+      style="width: 800px"
+    >
+      <div class="crop-box">
+        <vue-picture-cropper
+          :boxStyle="CROP_BOX_STYLE"
+          :img="images[current]"
+          :options="options"
+        />
+      </div>
+    </n-card>
+  </n-modal>
 </template>
 
 <style scoped>
@@ -390,6 +417,7 @@ const options = {
   /* background: rgb(250, 250, 252); */
   min-width: 150px;
   min-height: 200px;
+  margin-bottom: 8px;
 }
 .n-input {
   min-width: 80px;

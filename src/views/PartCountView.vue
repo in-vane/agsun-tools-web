@@ -20,6 +20,8 @@ import {
 } from '@/utils';
 import { useFileStore } from '@/store/modules/file';
 
+const showModal = ref(false);
+
 const fileStore = useFileStore();
 
 const message = useMessage();
@@ -282,14 +284,19 @@ onUnmounted(() => {
     <n-spin :show="loadingPartCount">
       <n-flex align="center">
         <n-h3 prefix="bar">2. 文件图像预览</n-h3>
-        <n-input
-          v-model:value="jump"
-          :allow-input="num"
-          autosize
-          placeholder="页数"
-        />
-        <n-button type="primary" ghost @click="() => (current = jump - 1)">
-          快速选择
+        <n-input-group>
+          <n-input
+            v-model:value="jump"
+            :allow-input="num"
+            autosize
+            placeholder="页数"
+          />
+          <n-button type="primary" ghost @click="() => (current = jump - 1)">
+            快速选择
+          </n-button>
+        </n-input-group>
+        <n-button type="primary" @click="() => (showModal = true)">
+          选择区域
         </n-button>
       </n-flex>
       <div class="scroll-box">
@@ -323,13 +330,13 @@ onUnmounted(() => {
         </div>
       </div>
       <div class="scroll-box">
-        <div class="crop-box">
+        <!-- <div class="crop-box">
           <vue-picture-cropper
             :boxStyle="{ ...CROP_BOX_STYLE, height: '600px' }"
             :img="images[current]"
             :options="options"
           />
-        </div>
+        </div> -->
         <n-space class="form-box" vertical>
           <n-select v-model:value="mode" :options="sltoptions" />
           <template v-if="mode == MODE_NORMAL">
@@ -445,6 +452,22 @@ onUnmounted(() => {
       />
     </div>
   </n-space>
+  <n-modal v-model:show="showModal">
+    <n-card
+      title="区域选择"
+      role="dialog"
+      aria-modal="true"
+      style="width: 800px"
+    >
+      <div class="crop-box">
+        <vue-picture-cropper
+          :boxStyle="{ ...CROP_BOX_STYLE, height: '600px' }"
+          :img="images[current]"
+          :options="options"
+        />
+      </div>
+    </n-card>
+  </n-modal>
 </template>
 
 <style scoped>
@@ -485,7 +508,7 @@ onUnmounted(() => {
   background: rgba(208, 48, 80, 0.2);
 }
 .crop-box {
-  width: 50%;
+  /* width: 50%; */
 }
 .form-box {
   max-width: 50%;
