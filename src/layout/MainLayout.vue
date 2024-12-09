@@ -16,7 +16,8 @@ import {
   AlbumsOutline as IAlbums,
   ArchiveOutline as IArchive,
 } from '@vicons/ionicons5';
-import { renderIcon } from '@/utils';
+import { lyla } from '@/request';
+import { renderIcon, download } from '@/utils';
 import { useUserStore } from '@/store/modules/user';
 import { useFileStore } from '@/store/modules/file';
 
@@ -227,6 +228,18 @@ const logoutHanlder = async () => {
   location.href = '/login';
 };
 
+const exportHistory = () => {
+  lyla
+    .post('/history/searchRecord')
+    .then((res) => {
+      console.log(res);
+      download('history.txt', res.json.data.path);
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+};
+
 onMounted(() => {
   const key = route.name;
   const name = menuOptions.find((item) => item.key == key)?.name;
@@ -242,6 +255,7 @@ onMounted(() => {
         <n-flex :size="24" align="center">
           <n-text>欢迎, {{ userInfo.name || 'admin' }}</n-text>
           <n-button @click="show = true"> 使用文档 </n-button>
+          <n-button @click="exportHistory"> 导出历史 </n-button>
           <n-button @click="logoutHanlder"> 登出 </n-button>
         </n-flex>
       </n-flex>
