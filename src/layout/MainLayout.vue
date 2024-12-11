@@ -233,7 +233,7 @@ const exportHistory = () => {
     .post('/history/searchRecord')
     .then((res) => {
       console.log(res);
-      download('history.txt', res.json.path);
+      download(res.json.filename, res.json.path);
     })
     .catch((err) => {
       console.log(err)
