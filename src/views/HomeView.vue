@@ -2,6 +2,7 @@
 import IMG_21 from '@/assets/doc/2.1.png';
 import IMG_221 from '@/assets/doc/2.2.1.png';
 import IMG_222 from '@/assets/doc/2.2.2.png';
+import IMG_223 from '@/assets/doc/2.2.3.png';
 import IMG_231 from '@/assets/doc/2.3.1.png';
 import IMG_232 from '@/assets/doc/2.3.2.png';
 import IMG_233 from '@/assets/doc/2.3.3.png';
@@ -13,6 +14,8 @@ import IMG_251 from '@/assets/doc/2.5.1.png';
 import IMG_252 from '@/assets/doc/2.5.2.png';
 import IMG_261 from '@/assets/doc/2.6.1.png';
 import IMG_262 from '@/assets/doc/2.6.2.png';
+import IMG_263 from '@/assets/doc/2.6.3.png';
+import IMG_264 from '@/assets/doc/2.6.4.png';
 import IMG_27 from '@/assets/doc/2.7.png';
 import IMG_281 from '@/assets/doc/2.8.1.png';
 import IMG_282 from '@/assets/doc/2.8.2.png';
@@ -50,6 +53,7 @@ import IMG_292 from '@/assets/doc/2.9.2.png';
         </n-li>
         <n-li>
           单击【开始转换】，转换结束后在左侧灰色虚线框内显示文档的缩略图，横向滚动。单击缩略图可以切换【选取对比区域】中的图源。右侧绿色虚线框内为截取的区域预览，单击可放大查看。
+          点击【选择区域】来选出要对比的区域
         </n-li>
         <n-li>
           在确保两份文档均选取区域后，单击【开始对比】，结果中染色部分即为差异。
@@ -64,7 +68,7 @@ import IMG_292 from '@/assets/doc/2.9.2.png';
       </n-ol>
       <n-image height="240" alt="image" :src="IMG_221" />
       <n-image height="240" alt="image" :src="IMG_222" />
-
+      <n-image height="240" alt="image" :src="IMG_223" />
       <n-h3>2.3 整页对比</n-h3>
       <n-p>
         该功能以【页】为单位对两份文档进行对比，若需要对部分区域内的内容进行对比，请使用区域对比功能。
@@ -140,6 +144,8 @@ import IMG_292 from '@/assets/doc/2.9.2.png';
         该功能用以检测文档中螺丝包的螺丝数量和步骤图中螺丝总数是否一致。由于螺丝包表格可能由矢量绘制或为图片，格式没有统一规范，故为兼容需要选取区域识别。
       </n-p>
       <n-image height="240" alt="image" :src="IMG_261" />
+      <n-image height="240" alt="image" :src="IMG_263" />
+      <n-image height="240" alt="image" :src="IMG_264" />
       <n-image height="240" alt="image" :src="IMG_262" />
 
       <n-h3>2.7 CE表对比</n-h3>
