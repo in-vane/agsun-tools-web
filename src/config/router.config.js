@@ -76,6 +76,11 @@ export const asyncRoutes = [
         component: () => import('@/views/LineView.vue'),
       },
       {
+        path: '/text',
+        name: 'text',
+        component: () => import('@/views/TextView.vue'),
+      },
+      {
         path: '/history',
         name: 'history',
         component: () => import('@/views/History/HistoryView.vue'),

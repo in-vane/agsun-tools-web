@@ -14,6 +14,7 @@ import {
   LogOutOutline as ILogout,
   PencilOutline as ILine,
   AlbumsOutline as IAlbums,
+  TextOutline as IText,
   ArchiveOutline as IArchive,
 } from '@vicons/ionicons5';
 import { lyla } from '@/request';
@@ -34,6 +35,7 @@ import CSize from '@/views/SizeView.vue';
 import CLang from '@/views/LanguageView.vue';
 import COcr from '@/views/OCRView.vue';
 import CLine from '@/views/LineView.vue';
+import CText from '@/views/TextView.vue';
 import CHis from '@/views/History/HistoryView.vue';
 
 const userStore = useUserStore();
@@ -104,6 +106,12 @@ const menuOptions = [
     key: 'line',
     name: '线段检测',
     icon: renderIcon(ILine),
+  },
+  {
+    label: renderLabel('/text', '文字对比'),
+    key: 'text',
+    name: '文字对比',
+    icon: renderIcon(IText),
   },
   {
     label: renderLabel('/history', '历史检索'),
@@ -192,6 +200,8 @@ const getComponent = (key) => {
       return COcr;
     case 'line':
       return CLine;
+    case 'text':
+      return CText;
     case 'history':
       return CHis;
 
