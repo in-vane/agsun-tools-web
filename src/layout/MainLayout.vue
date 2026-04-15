@@ -211,9 +211,9 @@ const getComponent = (key) => {
 };
 
 const onUpdateUpload = (data) => {
-  console.log(data);
+  let action = data.fileList.length > fileList.value.length ? 'add' : 'remove';
   fileList.value = data.fileList;
-  fileStore.updateFiles(data.fileList);
+  fileStore.updateFiles(data.file, action);
 };
 
 const rowProps = (row) => {
@@ -222,7 +222,12 @@ const rowProps = (row) => {
     onClick: () => {
       if (fileList.value.length < 2) {
         fileList.value.push(row);
-        fileStore.updateFiles(fileList.value);
+        fileStore.updateFiles(row, 'add');
+      }else {
+        window['$notification'].info({
+          title: '只能选择两个文件',
+          content: `比较功能只应选择两个文件，请删除不需要的文件后再添加。`,
+        });
       }
     },
   };

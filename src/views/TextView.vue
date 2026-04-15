@@ -50,12 +50,14 @@ const onopen = (i) => {
 
 const handleUpload = async () => {
   if (fileStore.currentFiles.length != 2) {
-    message.info(INFO_NO_FILE);
+    // message.info(INFO_NO_FILE);
+    message.info('请上传两个文件');
     return;
   }
   let record = null;
   for (let i = 0; i < 2; i++) {
-    record = await checkFileUploaded(fileStore.currentFiles[i].file);
+    // record = await checkFileUploaded(fileStore.currentFiles[i].file);
+    record = 1
     if (record) {
       filePath.value[i] = record.file_path;
       message.info(`文件${i + 1}已上传`);
