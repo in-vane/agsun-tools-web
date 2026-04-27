@@ -56,8 +56,8 @@ const handleUpload = async () => {
   }
   let record = null;
   for (let i = 0; i < 2; i++) {
-    // record = await checkFileUploaded(fileStore.currentFiles[i].file);
-    record = 1
+    record = await checkFileUploaded(fileStore.currentFiles[i].file);
+
     if (record) {
       filePath.value[i] = record.file_path;
       message.info(`文件${i + 1}已上传`);
