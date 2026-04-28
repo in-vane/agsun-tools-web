@@ -48,26 +48,75 @@ const onopen = (i) => {
   uploadFile(ws.value[i], fileStore.currentFiles[i].file);
 };
 
+// const handleUpload = async () => {
+//   if (fileStore.currentFiles.length != 2) {
+//     // message.info(INFO_NO_FILE);
+//     message.info('请上传两个文件');
+//     return;
+//   }
+//   let record = null;
+//   for (let i = 0; i < 2; i++) {
+//     record = await checkFileUploaded(fileStore.currentFiles[i].file);
+
+//     if (record) {
+//       filePath.value[i] = record.file_path;
+//       message.info(`文件${i + 1}已上传`);
+//     } else {
+//       ws.value[i] = openWebsocket(
+//         loadingUpload,
+//         () => onopen(i),
+//         (e) => onmessage(e, i)
+//       );
+//     }
+//   }
+// };
+
 const handleUpload = async () => {
-  if (fileStore.currentFiles.length != 2) {
-    // message.info(INFO_NO_FILE);
+  if (fileStore.currentFiles.length !== 2) {
     message.info('请上传两个文件');
     return;
   }
-  let record = null;
-  for (let i = 0; i < 2; i++) {
-    record = await checkFileUploaded(fileStore.currentFiles[i].file);
 
-    if (record) {
-      filePath.value[i] = record.file_path;
-      message.info(`文件${i + 1}已上传`);
-    } else {
-      ws.value[i] = openWebsocket(
-        loadingUpload,
-        () => onopen(i),
-        (e) => onmessage(e, i)
-      );
+  loadingUpload.value = true;
+
+  try {
+    for (let i = 0; i < 2; i++) {
+      const file = fileStore.currentFiles[i].file;
+
+      // 1. 先查是否已上传
+      const record = await checkFileUploaded(file);
+
+      if (record) {
+        filePath.value[i] = record.file_path;
+        message.info(`文件${i + 1}已上传`);
+        continue;
+      }
+
+      // 2. 串行上传
+      await new Promise((resolve, reject) => {
+        ws.value[i] = openWebsocket(
+          loadingUpload,
+          () => {
+            uploadFile(ws.value[i], file);
+          },
+          (e) => {
+            const data = JSON.parse(e.data);
+
+            if (data.file_path) {
+              filePath.value[i] = data.file_path;
+              message.info(`文件${i + 1}已上传`);
+              ws.value[i].close();
+              resolve();
+            }
+          }
+        );
+      });
     }
+  } catch (err) {
+    console.error(err);
+    message.error('上传失败');
+  } finally {
+    loadingUpload.value = false;
   }
 };
 
